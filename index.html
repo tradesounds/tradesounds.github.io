@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Invoice Generator - TRADESOUNDS</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    body {
+      font-family: 'Poppins', Arial, sans-serif;
+      background: #f8f9fa;
+    }
+    #invoiceBox {
+      background: #fff;
+      padding: 40px;
+      border: 1px solid #dee2e6;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      max-width: 100%;
+    }
+    .invoice-header {
+      border-bottom: 2px solid #495057;
+      padding-bottom: 15px;
+      margin-bottom: 20px;
+    }
+    .invoice-title {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .brand-text {
+      font-size: 24px;
+      font-weight: 800;
+      color: #212529;
+    }
+    table.table th {
+      background: #f1f3f5;
+      font-weight: 600;
+      text-align: center;
+    }
+    table.table td {
+      vertical-align: middle;
+    }
+    .grand-total {
+      font-size: 18px;
+      font-weight: bold;
+      color: #212529;
+    }
+    .signature-space {
+      height: 80px;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 14px;
+      color: #6c757d;
+      font-weight: 500;
+    }
+
+    /* PRINT STYLES */
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #invoiceBox, #invoiceBox * {
+        visibility: visible;
+      }
+      #invoiceBox {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        box-shadow: none !important;
+        border: none !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      table.table, table.table th, table.table td {
+        border: 1px solid #000 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container my-4">
+  <!-- Form Input (hanya tampil di layar, tidak ikut print/pdf) -->
+  <div class="card shadow-sm mb-4 no-print">
+    <div class="card-body">
+      <h4 class="card-title mb-3">Form Input Invoice</h4>
+      <div class="mb-3">
+        <label class="form-label">Kepada Yth.:</label>
+        <input type="text" id="billto" class="form-control" value="Nama Klien" />
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Jatuh Tempo:</label>
+        <input type="date" id="dueDateInput" class="form-control" />
+      </div>
+      <button onclick="addItem()" class="btn btn-primary me-2">Tambah Produk</button>
+      <button onclick="downloadPDF()" class="btn btn-success">Unduh PDF</button>
+      <button onclick="window.print()" class="btn btn-secondary">Print</button>
+    </div>
+  </div>
+
+  <!-- Invoice -->
+  <div class="card shadow" id="invoiceBox">
+    <div class="card-body">
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center invoice-header">
+        <div class="brand-text">TRADESOUNDS</div>
+        <div class="text-end">
+          <h3 class="fw-bold mb-1">TRADESOUNDS</h3>
+          <p class="mb-0 small">
+            Komplek Automotif Cibubur Point<br />
+            Blok E No.17, Cimanggis, Depok 16545<br />
+            📞 0813-1862-4308
+          </p>
+        </div>
+      </div>
+
+      <!-- Invoice Info -->
+      <h4 class="mb-4 text-center invoice-title">Invoice</h4>
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <p class="mb-1"><strong>No. Invoice:</strong> <span id="invoiceNum"></span></p>
+          <p class="mb-1"><strong>Tanggal Invoice:</strong> <span id="invoiceDate"></span></p>
+          <p class="mb-1"><strong>Jatuh Tempo:</strong> <span id="dueDate"></span></p>
+        </div>
+        <div class="col-md-6 text-md-end">
+          <p><strong>Kepada Yth.:</strong><br /><span id="billToText">Nama Klien</span></p>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle text-center" id="invoiceTable">
+          <thead>
+            <tr>
+              <th>NO</th>
+              <th>Deskripsi</th>
+              <th>Qty</th>
+              <th>Harga Satuan</th>
+              <th>Total</th>
+              <th class="no-print">Aksi</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <!-- Total -->
+      <div class="text-end grand-total border-top pt-3">
+        Jumlah Tagihan: Rp <span id="grandTotal">0</span>
+      </div>
+
+      <!-- Signature -->
+      <div class="mt-5 text-end">
+        <p><strong>Authorized Signature</strong></p>
+        <div class="signature-space"></div>
+        <p class="fw-bold">___________________________</p>
+        <p class="mb-0">TRADESOUNDS</p>
+      </div>
+
+      <!-- Footer -->
+      <div class="footer">Terima kasih atas kepercayaan Anda kepada kami.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let count = 0;
+
+  function generateInvoiceNum() {
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, "0");
+    const d = String(today.getDate()).padStart(2, "0");
+    document.getElementById("invoiceNum").innerText = `TRDS-${y}${m}${d}-${count}`;
+  }
+
+  function addItem() {
+    count++;
+    const tableBody = document.querySelector("#invoiceTable tbody");
+    const row = tableBody.insertRow(-1);
+    row.innerHTML = `
+      <td>${count}</td>
+      <td contenteditable="true">Deskripsi Produk</td>
+      <td contenteditable="true" oninput="updateTotal(this)">1</td>
+      <td contenteditable="true" oninput="updateTotal(this)">0</td>
+      <td class="rowTotal">Rp 0</td>
+      <td class="no-print"><button class="btn btn-sm btn-danger" onclick="deleteRow(this)">Hapus</button></td>
+    `;
+    generateInvoiceNum();
+  }
+
+  function updateTotal(cell) {
+    const row = cell.parentElement;
+    const qty = parseInt(row.cells[2].innerText) || 0;
+    const price = parseInt(row.cells[3].innerText) || 0;
+    const total = qty * price;
+    row.cells[4].innerText = "Rp " + total.toLocaleString("id-ID");
+    recalcGrandTotal();
+  }
+
+  function deleteRow(btn) {
+    btn.parentElement.parentElement.remove();
+    recalcGrandTotal();
+  }
+
+  function recalcGrandTotal() {
+    const rows = document.querySelectorAll("#invoiceTable tbody tr");
+    let sum = 0;
+    rows.forEach((row) => {
+      const val = row.cells[4].innerText.replace("Rp ", "").replace(/\./g, "");
+      sum += parseInt(val) || 0;
+    });
+    document.getElementById("grandTotal").innerText = sum.toLocaleString("id-ID");
+  }
+
+  document.getElementById("billto").addEventListener("input", () => {
+    document.getElementById("billToText").innerText = document.getElementById("billto").value;
+  });
+
+  document.getElementById("dueDateInput").addEventListener("change", () => {
+    const val = document.getElementById("dueDateInput").value;
+    if (val) {
+      const dateObj = new Date(val);
+      document.getElementById("dueDate").innerText = dateObj.toLocaleDateString("id-ID");
+    }
+  });
+
+  function setDate() {
+    const today = new Date();
+    document.getElementById("invoiceDate").innerText = today.toLocaleDateString("id-ID");
+  }
+  setDate();
+
+  function downloadPDF() {
+    const element = document.getElementById("invoiceBox");
+    const nama = document.getElementById("billto").value || "Customer";
+    const today = new Date();
+    const tanggal = today.toISOString().split("T")[0];
+    const fileName = `${nama} - TRADESOUNDS - ${tanggal}.pdf`;
+
+    const opt = {
+      margin: 0.5,
+      filename: fileName,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
+    };
+
+    html2pdf()
+      .set(opt)
+      .from(element)
+      .save()
+      .catch((err) => {
+        console.error("html2pdf error:", err);
+      });
+  }
+</script>
+</body>
+</html>
