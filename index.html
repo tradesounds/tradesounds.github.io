@@ -270,8 +270,7 @@ function addItem() {
     <td contenteditable="true" oninput="updateTotal(this)">1</td>
     <td contenteditable="true" oninput="updateTotal(this)">0</td>
     <td class="rowTotal">Rp 0</td>
-   <td class="no-print text-center" style="cursor:pointer;" onclick="deleteRow(this)">🗑️</td>
-
+    <td class="no-print"><button class="btn btn-sm btn-danger" onclick="deleteRow(this)">Hapus</button></td>
   `;
   generateInvoiceNum();
   saveData();
