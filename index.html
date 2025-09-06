@@ -1,390 +1,477 @@
 <!DOCTYPE html>
+
 <html lang="id">
+
 <head>
-  <meta charset="UTF-8" />
-  <title>Invoice Generator - TRADESOUNDS</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!-- 🚀 responsive meta -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" /> 
- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<meta charset="UTF-8" />
+
+<title>Invoice Generator - TRADESOUNDS</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!-- ✅ Biar responsive -->
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
 <style>
-/* ================= Base ================= */
-body { background: #f8f9fa; }
-#invoiceBox { 
-  background: #fff; 
-  padding: 10px; 
-  border: 1px solid #dee2e6; 
-  border-radius: 10px; 
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08); 
-  overflow-x: auto;   /* 🚀 tabel bisa geser di layar kecil */
+
+body {
+
+background: #FFFFFF !important;
+
+color: #000000 !important;
+
 }
 
-/* Header */
-.invoice-header { 
-  border-bottom: 2px solid #495057; 
-  padding-bottom: 15px; 
-  margin-bottom: 20px; 
-  flex-wrap: wrap;   /* 🚀 supaya header tidak pecah di HP */
-}
-.invoice-title { font-size: 26px; font-weight: 700; text-transform: uppercase; }
-.brand-text   { font-size: 24px; font-weight: 800; color: #212529; }
+/* Dark mode */
 
-/* Table */
-table.table th { 
-  background: #f1f3f5; 
-  font-weight: 600; 
-  text-align: center; 
-  color: #212529;
-  white-space: nowrap;
+body.dark-mode {
+
+background: #121212 !important;
+
+color: #FFFFFF !important;
+
 }
-table.table td { 
-  vertical-align: middle; 
-  color: #212529;
-  word-break: break-word;
+
+body.dark-mode #invoiceBox {
+
+background: #1E1E1E !important;
+
+color: #FFFFFF !important;
+
 }
+
+#invoiceBox {
+
+background: #FFFFFF;
+
+padding: 20px;
+
+border-radius: 8px;
+
+max-width: 900px;
+
+margin: auto;
+
+box-shadow: 0 0 10px rgba(0,0,0,0.1);
+
+overflow-x: auto; /* ✅ Agar tabel tidak overflow di mobile */
+
+}
+
+/* Input transparan */
 
 input, textarea {
-  background: #fff;
-  color: #212529;
-  border: 1px solid #ced4da;
-  border-radius: 6px;
-  padding: 5px 8px;
+
+background: transparent;
+
+border: none !important;
+
+outline: none !important;
+
+box-shadow: none !important;
+
+color: inherit;
+
+width: 100%;
+
 }
 
-.grand-total { font-size: 18px; font-weight: bold; }
-.signature-space { height: 80px; }
+input::placeholder, textarea::placeholder {
 
-.footer { 
-  text-align: center; 
-  margin-top: 40px; 
-  font-size: 14px; 
-  color: #6c757d; 
-  font-weight: 500; 
+color: #aaa;
+
+opacity: 1;
+
 }
 
-/* ================= Dark Mode ================= */
-body.dark-mode { background: #121212; color: #e4e6eb; }
-body.dark-mode #invoiceBox { background: #1e1e1e; border: 1px solid #333; }
-body.dark-mode .invoice-header { border-color: #555; }
-body.dark-mode .invoice-title,
-body.dark-mode .brand-text,
-body.dark-mode h3,
-body.dark-mode p,
-body.dark-mode strong { color: #f5f5f5 !important; }
-body.dark-mode table.table th { background: #2c2c2c; color: #f1f1f1; border-color: #444; }
-body.dark-mode table.table td { background: #1e1e1e; color: #e4e6eb; border-color: #444; }
-body.dark-mode input, body.dark-mode textarea { background: #2a2a2a; color: #fff; border: 1px solid #555; }
-body.dark-mode .grand-total { color: #fff; border-color: #444 !important; }
-body.dark-mode .footer { color: #aaa; }
+/* Gambar produk */
 
-/* Smooth transition */
-body, #invoiceBox, table, input, textarea {
-  transition: background 0.3s, color 0.3s, border 0.3s;
+.product-img {
+
+max-height: 40px;
+
+display: block;
+
+margin: auto;
+
 }
 
-/* ================= Print ================= */
-@media print {
-  body, #invoiceBox {
-    background: #ffffff !important;
-    color: #000000 !important;
-    border: none !important;
-    box-shadow: none !important;
-  }
-  .invoice-header, .invoice-title, h3, h4, strong, .grand-total, .footer {
-    color: #000000 !important;
-  }
-  table.table th {
-    background: #f1f1f1 !important;
-    color: #000000 !important;
-    border: 1px solid #000 !important;
-  }
-  table.table td {
-    background: #ffffff !important;
-    color: #000000 !important;
-    border: 1px solid #000 !important;
-  }
-  .signature-space { border-bottom: 1px solid #000 !important; }
-  .no-print { display: none !important; }
-  th.no-print, td.no-print { display: none !important; }
-}
+/* Responsive table */
 
-/* ================= Mobile Responsive ================= */
 @media (max-width: 768px) {
-  #invoiceBox { padding: 20px; }
-  .invoice-title { font-size: 20px; }
-  .brand-text { font-size: 18px; }
-  table.table th, table.table td { font-size: 14px; padding: 6px; }
-  .grand-total { font-size: 16px; }
-  .card-body { padding: 15px; }
-  .invoice-header { text-align: center; }
-  .invoice-header .text-end { text-align: center !important; width: 100%; margin-top: 10px; }
+
+#invoiceBox table {
+
+font-size: 12px;
+
 }
+
+#invoiceBox h2 {
+
+font-size: 20px;
+
+}
+
+}
+
+/* Sembunyikan input file saat print/pdf */
+
+@media print {
+
+body * { visibility: hidden; }
+
+#invoiceBox, #invoiceBox * { visibility: visible; }
+
+#invoiceBox { position: absolute; left: 0; top: 0; width: 100%; }
+
+input[type="file"] { display: none !important; }
+
+}
+
 </style>
+
 </head>
+
 <body>
+
 <div class="container my-4">
-  <!-- Form Input -->
-  <div class="card shadow-sm mb-4 no-print">
-    <div class="card-body d-flex justify-content-between align-items-center flex-wrap">
-      <h4 class="card-title mb-2">Form Input Invoice</h4>
-      <button id="darkModeToggle" class="btn btn-outline-dark ms-auto">🌙 Dark Mode</button>
-    </div>
-    <hr>
-    <div class="card-body">
-      <div class="mb-3">
-        <label class="form-label">Kepada Yth.:</label>
-        <input type="text" id="billto" class="form-control" />
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Jatuh Tempo:</label>
-        <input type="date" id="dueDateInput" class="form-control" />
-      </div> 
-      <div class="mb-3">
-        <label class="form-label">Ganti Logo:</label>
-        <input type="file" id="logoInput" class="form-control" accept="image/*" />
-      </div>
-      <button onclick="addItem()" class="btn btn-primary me-2">Tambah Produk</button>
-      <button onclick="window.print(); clearData()" class="btn btn-secondary me-2">Print</button>
-      <button onclick="downloadPDF(); clearData()" class="btn btn-success">Unduh PDF</button>
-    </div>
-  </div>
 
-  <!-- Invoice -->
-  <div class="card shadow" id="invoiceBox">
-    <div class="card-body">
-      <div class="d-flex justify-content-between align-items-center invoice-header">
-        <div class="brand-text">
-          <img id="logoImg" src="" alt="Logo" style="max-height: 60px;" />
-        </div>
-        <div class="text-end">
-          <h3 class="fw-bold mb-1">TRADESOUNDS</h3>
-          <p class="mb-0 small">
-            Komplek Automotif Cibubur Point<br />
-            Blok E No.17, Cimanggis, Depok 16545<br />
-            📞 0813-1862-4308
-          </p>
-        </div>
-      </div>
+<div class="row">
 
-      <h4 class="mb-4 text-center invoice-title">Invoice</h4>
-      <div class="row mb-4">
-        <div class="col-md-6">
-          <p class="mb-1"><strong>No. Invoice:</strong> <span id="invoiceNum"></span></p>
-          <p class="mb-1"><strong>Tanggal Invoice:</strong> <span id="invoiceDate"></span></p>
-          <p class="mb-1"><strong>Jatuh Tempo:</strong> <span id="dueDate"></span></p>
-        </div>
-        <div class="col-md-6 text-md-end">
-          <p><strong>Kepada Yth.:</strong><br /><span id="billToText"></span></p>
-        </div>
-      </div>
+<!-- Form -->
 
-      <div class="table-responsive">
-        <table class="table table-bordered align-middle text-center" id="invoiceTable">
-          <thead>
-            <tr>
-              <th>NO</th>
-              <th>Deskripsi</th>
-              <th>Qty</th>
-              <th>Harga Satuan</th>
-              <th>Total</th>
-              <th class="no-print">Aksi</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
+<div class="col-md-4">
 
-      <div class="text-end grand-total border-top pt-3">
-        Jumlah Tagihan: Rp <span id="grandTotal">0</span>
-      </div>
+<div class="card">
 
-      <div class="mt-5 text-end">
-        <p><strong>Authorized Signature</strong></p>
-        <div class="signature-space"></div>
-        <p class="fw-bold">___________________________</p>
-        <p class="mb-0">TRADESOUNDS</p>
-      </div>
+<div class="card-body">
 
-      <div class="footer">Terima kasih atas kepercayaan Anda kepada kami.</div>
-    </div>
-  </div>
+<h5 class="mb-3">Form Input Invoice</h5>
+
+<div class="mb-3">
+
+<label class="form-label">Nama Brand:</label>
+
+<input type="text" id="brandInput" placeholder="Masukkan nama brand" />
+
+</div>
+
+<div class="mb-3">
+
+<label class="form-label">Logo Brand:</label>
+
+<input type="file" id="logoInput" accept="image/*" />
+
+</div>
+
+<div class="mb-3">
+
+<label class="form-label">Bill To:</label>
+
+<input type="text" id="billToInput" placeholder="Nama klien" />
+
+</div>
+
+<div class="mb-3">
+
+<label class="form-label">Due Date:</label>
+
+<input type="date" id="dueDateInput" />
+
+</div>
+
+<!-- Tombol Aksi -->
+
+<div class="d-flex flex-wrap gap-2 mt-3">
+
+<button class="btn btn-primary btn-sm" onclick="addItem()">➕ Tambah Produk</button>
+
+<button class="btn btn-success btn-sm" onclick="generatePDF()">⬇️ Download PDF</button>
+
+<button class="btn btn-secondary btn-sm" onclick="window.print()">🖨️ Print</button>
+
+<button class="btn btn-dark btn-sm" onclick="toggleDarkMode()">🌙 Dark Mode</button>
+
+<button class="btn btn-danger btn-sm" onclick="clearData()">♻️ Reset Data</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- Preview Invoice -->
+
+<div class="col-md-8">
+
+<div id="invoiceBox">
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+
+<h2 id="brandName">TRADESOUNDS</h2>
+
+<img id="brandLogo" src="" alt="Logo" style="max-height: 60px; display:none;" />
+
+</div>
+
+<div class="mb-3">
+
+<strong>Bill To:</strong> <span id="billToText"></span><br>
+
+<strong>Due Date:</strong> <span id="dueDateText"></span><br>
+
+<strong>Invoice :</strong> <span id="invoiceNumberText"></span>
+
+</div>
+
+<div class="table-responsive">
+
+<table class="table table-bordered align-middle text-center">
+
+<thead>
+
+<tr>
+
+<th>Gambar</th>
+
+<th>Deskripsi</th>
+
+<th>Qty</th>
+
+<th>Harga</th>
+
+<th>Total</th>
+
+</tr>
+
+</thead>
+
+<tbody id="invoiceItems"></tbody>
+
+<tfoot>
+
+<tr>
+
+<th colspan="4" class="text-end">Grand Total</th>
+
+<th id="grandTotal">0</th>
+
+</tr>
+
+</tfoot>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
 </div>
 
 <script>
-let count = 0;
 
-// Dark Mode Toggle
-const toggleBtn = document.getElementById("darkModeToggle");
-toggleBtn.addEventListener("click", () => {
-  document.body.classList.toggle("dark-mode");
-  toggleBtn.innerText = document.body.classList.contains("dark-mode") ? "☀️ Light Mode" : "🌙 Dark Mode";
-});
+// Generate nomor invoice otomatis
 
-function saveData() {
-  const data = {
-    billto: document.getElementById("billto").value,
-    dueDate: document.getElementById("dueDate").innerText,
-    table: document.querySelector("#invoiceTable tbody").innerHTML,
-    grandTotal: document.getElementById("grandTotal").innerText,
-    invoiceNum: document.getElementById("invoiceNum").innerText,
-    invoiceDate: document.getElementById("invoiceDate").innerText,
-    logo: document.getElementById("logoImg").src,
-    count: count
-  };
-  localStorage.setItem("invoiceData", JSON.stringify(data));
+function generateInvoiceNumber() {
+
+const today = new Date();
+
+const y = today.getFullYear();
+
+const m = String(today.getMonth() + 1).padStart(2, "0");
+
+const d = String(today.getDate()).padStart(2, "0");
+
+const rand = String(Math.floor(Math.random() * 999) + 1).padStart(3, "0");
+
+return `INV-${y}${m}${d}-${rand}`;
+
 }
 
-function loadData() {
-  const data = JSON.parse(localStorage.getItem("invoiceData"));
-  if (data) {
-    document.getElementById("billto").value = data.billto || "";
-    document.getElementById("billToText").innerText = data.billto || "";
-    document.getElementById("dueDate").innerText = data.dueDate || "";
-    document.querySelector("#invoiceTable tbody").innerHTML = data.table || "";
-    document.getElementById("grandTotal").innerText = data.grandTotal || "0";
-    document.getElementById("invoiceNum").innerText = data.invoiceNum || "";
-    document.getElementById("invoiceDate").innerText = data.invoiceDate || "";
-    if (data.logo) document.getElementById("logoImg").src = data.logo;
-    count = data.count || 0;
-  }
+// Format angka dengan ribuan
+
+function formatNumber(num) {
+
+return Number(num).toLocaleString("en-US");
+
 }
 
-function clearData() { localStorage.removeItem("invoiceData"); }
+function toggleDarkMode() {
 
-function generateInvoiceNum() {
-  const today = new Date();
-  const y = today.getFullYear();
-  const m = String(today.getMonth() + 1).padStart(2, "0");
-  const d = String(today.getDate()).padStart(2, "0");
-  const nomor = count.toString().padStart(3, "0");
-  document.getElementById("invoiceNum").innerText = `TRDS-${y}${m}${d}-${nomor}`;
-  saveData();
+document.body.classList.toggle("dark-mode");
+
 }
 
 function addItem() {
-  count++;
-  const tableBody = document.querySelector("#invoiceTable tbody");
-  const row = tableBody.insertRow(-1);
-  row.innerHTML = `
-    <td>${count}</td>
-    <td contenteditable="true" oninput="saveData()">Deskripsi Produk</td>
-    <td contenteditable="true" oninput="updateTotal(this)">1</td>
-    <td contenteditable="true" oninput="updateTotal(this)">0</td>
-    <td class="rowTotal">Rp 0</td>
-  <td class="no-print text-center">
-  <i class="fas fa-trash text-danger" style="cursor:pointer;" onclick="deleteRow(this)"></i>
+
+const tbody = document.getElementById("invoiceItems");
+
+const row = document.createElement("tr");
+
+row.innerHTML = `
+
+<td>
+
+<input type="file" accept="image/*" onchange="previewProductImage(this)" />
+
+<img class="product-img" style="display:none;" />
+
 </td>
 
+<td><input type="text" placeholder="Deskripsi"></td>
 
-  `;
-  generateInvoiceNum();
-  saveData();
+<td><input type="number" value="1" onchange="updateTotal()"></td>
+
+<td><input type="number" value="0" onchange="updateTotal()"></td>
+
+<td class="itemTotal">0</td>
+
+`;
+
+tbody.appendChild(row);
+
 }
 
-function updateTotal(cell) {
-  const row = cell.parentElement;
-  const qty = parseInt(row.cells[2].innerText) || 0;
-  const price = parseInt(row.cells[3].innerText) || 0;
-  const total = qty * price;
-  row.cells[4].innerText = "Rp " + total.toLocaleString("id-ID");
-  recalcGrandTotal();
-  saveData();
-}
+function previewProductImage(input) {
 
-function deleteRow(btn) {
-  btn.parentElement.parentElement.remove();
-  recalcGrandTotal();
-  saveData();
-}
+const file = input.files[0];
 
-function recalcGrandTotal() {
-  const rows = document.querySelectorAll("#invoiceTable tbody tr");
-  let sum = 0;
-  rows.forEach((row) => {
-    const val = row.cells[4].innerText.replace("Rp ", "").replace(/\./g, "");
-    sum += parseInt(val) || 0;
-  });
-  document.getElementById("grandTotal").innerText = sum.toLocaleString("id-ID");
-}
+if (file) {
 
-document.getElementById("billto").addEventListener("input", () => {
-  document.getElementById("billToText").innerText = document.getElementById("billto").value;
-  saveData();
-});
+const reader = new FileReader();
 
-document.getElementById("dueDateInput").addEventListener("change", () => {
-  const val = document.getElementById("dueDateInput").value;
-  if (val) {
-    const dateObj = new Date(val);
-    document.getElementById("dueDate").innerText = dateObj.toLocaleDateString("id-ID");
-    saveData();
-  }
-});
+reader.onload = e => {
 
-document.getElementById("logoInput").addEventListener("change", (e) => {
-  const file = e.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      document.getElementById("logoImg").src = ev.target.result;
-      saveData();
-    };
-    reader.readAsDataURL(file);
-  }
-});
+const img = input.parentNode.querySelector(".product-img");
 
-function setDate() {
-  const today = new Date();
-  document.getElementById("invoiceDate").innerText = today.toLocaleDateString("id-ID");
-  saveData();
-}
+img.src = e.target.result;
 
-function downloadPDF() {
-  const element = document.getElementById("invoiceBox");
-  const nama = document.getElementById("billto").value || "Customer";
-  const today = new Date();
-  const tanggal = today.toISOString().split("T")[0];
-  const fileName = `${nama} - TRADESOUNDS - ${tanggal}.pdf`;
+img.style.display = "block";
 
-  const wasDark = document.body.classList.contains("dark-mode");
-  if (wasDark) { document.body.classList.remove("dark-mode"); }
-
-  const noPrintElements = document.querySelectorAll(".no-print");
-  noPrintElements.forEach(el => el.style.display = "none");
-
-  const invoiceBox = document.getElementById("invoiceBox");
-  const oldBorder = invoiceBox.style.border;
-  const oldShadow = invoiceBox.style.boxShadow;
-  invoiceBox.style.border = "none";
-  invoiceBox.style.boxShadow = "none";
-
-  const opt = {
-    margin: 0.5,
-    filename: fileName,
-    image: { type: "jpeg", quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
-  };
-
-  html2pdf().set(opt).from(element).save().then(() => {
-    invoiceBox.style.border = oldBorder;
-    invoiceBox.style.boxShadow = oldShadow;
-    noPrintElements.forEach(el => el.style.display = "");
-    if (wasDark) { document.body.classList.add("dark-mode"); }
-  }).catch((err) => {
-    console.error("html2pdf error:", err);
-    invoiceBox.style.border = oldBorder;
-    invoiceBox.style.boxShadow = oldShadow;
-    noPrintElements.forEach(el => el.style.display = "");
-    if (wasDark) { document.body.classList.add("dark-mode"); }
-  });
-}
-
-window.onload = () => {
-  loadData();
-  if (!document.getElementById("invoiceDate").innerText) { setDate(); }
-  if (!document.getElementById("invoiceNum").innerText) { generateInvoiceNum(); }
 };
+
+reader.readAsDataURL(file);
+
+}
+
+}
+
+function updateTotal() {
+
+let grandTotal = 0;
+
+document.querySelectorAll("#invoiceItems tr").forEach(row => {
+
+const qty = row.cells[2].querySelector("input").value || 0;
+
+const price = row.cells[3].querySelector("input").value || 0;
+
+const total = qty * price;
+
+row.querySelector(".itemTotal").textContent = formatNumber(total);
+
+grandTotal += total;
+
+});
+
+document.getElementById("grandTotal").textContent = formatNumber(grandTotal);
+
+}
+
+function generatePDF() {
+
+const element = document.getElementById("invoiceBox");
+
+const billTo = document.getElementById("billToInput").value.trim() || "UNKNOWN";
+
+const safeBillTo = billTo.replace(/[^a-z0-9]/gi, "_"); // supaya aman untuk nama file
+
+const fileName = `INV-TRD-${safeBillTo}.pdf`;
+
+html2pdf().from(element).save(fileName);
+
+}
+
+function clearData() {
+
+document.getElementById("brandInput").value = "";
+
+document.getElementById("billToInput").value = "";
+
+document.getElementById("dueDateInput").value = "";
+
+document.getElementById("brandName").textContent = "TRADESOUNDS";
+
+document.getElementById("brandLogo").style.display = "none";
+
+document.getElementById("billToText").textContent = "";
+
+document.getElementById("dueDateText").textContent = "";
+
+document.getElementById("invoiceNumberText").textContent = generateInvoiceNumber();
+
+document.getElementById("invoiceItems").innerHTML = "";
+
+document.getElementById("grandTotal").textContent = "0";
+
+}
+
+// Sinkronisasi input header
+
+document.getElementById("brandInput").addEventListener("input", e => {
+
+document.getElementById("brandName").textContent = e.target.value || "TRADESOUNDS";
+
+});
+
+document.getElementById("logoInput").addEventListener("change", e => {
+
+const file = e.target.files[0];
+
+if (file) {
+
+const reader = new FileReader();
+
+reader.onload = ev => {
+
+document.getElementById("brandLogo").src = ev.target.result;
+
+document.getElementById("brandLogo").style.display = "block";
+
+};
+
+reader.readAsDataURL(file);
+
+}
+
+});
+
+document.getElementById("billToInput").addEventListener("input", e => {
+
+document.getElementById("billToText").textContent = e.target.value;
+
+});
+
+document.getElementById("dueDateInput").addEventListener("input", e => {
+
+document.getElementById("dueDateText").textContent = e.target.value;
+
+});
+
+// set invoice number otomatis saat load
+
+document.getElementById("invoiceNumberText").textContent = generateInvoiceNumber();
+
 </script>
+
 </body>
+
 </html>
