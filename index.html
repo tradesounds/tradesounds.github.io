@@ -15,7 +15,7 @@
       color: #000000 !important;
     }
 
-    /* Dark mode */
+    /* Dark mode (hanya di layar) */
     body.dark-mode {
       background: #121212 !important;
       color: #FFFFFF !important;
@@ -80,8 +80,24 @@
       }
     }
 
-    /* Sembunyikan input file saat print/pdf */
+    /* Cetak / PDF selalu pakai mode terang */
     @media print {
+      body.dark-mode {
+        background: #FFFFFF !important;
+        color: #000000 !important;
+      }
+
+      body.dark-mode #invoiceBox {
+        background: #FFFFFF !important;
+        color: #000000 !important;
+      }
+
+      body.dark-mode table,
+      body.dark-mode input,
+      body.dark-mode textarea {
+        color: #000000 !important;
+      }
+
       body * {
         visibility: hidden;
       }
@@ -175,7 +191,7 @@
               <tfoot>
                 <tr>
                   <th colspan="4" class="text-end">Grand Total</th>
-                  <th id="grandTotal">0</th>
+                  <th id="grandTotal">0.00</th>
                 </tr>
               </tfoot>
             </table>
@@ -186,7 +202,6 @@
   </div>
 
   <script>
-    // Generate nomor invoice otomatis
     function generateInvoiceNumber() {
       const today = new Date();
       const y = today.getFullYear();
@@ -196,7 +211,6 @@
       return `INV-${y}${m}${d}-${rand}`;
     }
 
-    // Format angka dengan ribuan dan desimal
     function formatNumber(num) {
       return Number(num).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
@@ -251,7 +265,14 @@
       const billTo = document.getElementById("billToInput").value.trim() || "UNKNOWN";
       const safeBillTo = billTo.replace(/[^a-z0-9]/gi, "_");
       const fileName = `INV-TRD-${safeBillTo}.pdf`;
-      html2pdf().from(element).save(fileName);
+
+      // ✅ sementara matikan dark-mode agar PDF tetap terang
+      const wasDark = document.body.classList.contains("dark-mode");
+      if (wasDark) document.body.classList.remove("dark-mode");
+
+      html2pdf().from(element).save(fileName).then(() => {
+        if (wasDark) document.body.classList.add("dark-mode");
+      });
     }
 
     function clearData() {
