@@ -1,245 +1,392 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
   <meta charset="UTF-8" />
   <title>Invoice Generator - TRADESOUNDS</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- Bootstrap -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-
-  <!-- html2pdf -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" /> 
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" /> 
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+/* ================= Base ================= */
+body { background: #f8f9fa; }
+#invoiceBox { 
+  background: #fff; 
+  padding: 10px; 
+  border: 1px solid #dee2e6; 
+  border-radius: 10px; 
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08); 
+  overflow-x: auto;
+}
 
-  <style>
-    body {
-      background: #f8f9fa;
-      font-family: Arial, sans-serif;
-    }
+/* Header */
+.invoice-header { 
+  border-bottom: 2px solid #495057; 
+  padding-bottom: 15px; 
+  margin-bottom: 20px; 
+  flex-wrap: wrap;   
+}
+.invoice-title { font-size: 26px; font-weight: 700; text-transform: uppercase; }
+.brand-text   { font-size: 24px; font-weight: 800; color: #212529; }
 
-    .invoice-container {
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    }
+/* Table */
+table.table th { 
+  background: #f1f3f5; 
+  font-weight: 600; 
+  text-align: center; 
+  color: #212529;
+  white-space: nowrap;
+}
+table.table td { 
+  vertical-align: middle; 
+  color: #212529;
+  word-break: break-word;
+}
 
-    h2 {
-      font-weight: bold;
-    }
+input, textarea {
+  background: #fff;
+  color: #212529;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  padding: 5px 8px;
+}
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
+.product-img {
+  max-height: 50px;
+  max-width: 80px;
+}
 
-    table th,
-    table td {
-      border: 1px solid #000 !important;
-      text-align: center;
-      vertical-align: middle;
-    }
+/* ================= Dark Mode ================= */
+body.dark-mode { background: #121212; color: #e4e6eb; }
+body.dark-mode #invoiceBox { background: #1e1e1e; border: 1px solid #333; }
+body.dark-mode .invoice-header { border-color: #555; }
+body.dark-mode .invoice-title,
+body.dark-mode .brand-text,
+body.dark-mode h3,
+body.dark-mode p,
+body.dark-mode strong { color: #f5f5f5 !important; }
+body.dark-mode table.table th { background: #2c2c2c; color: #f1f1f1; border-color: #444; }
+body.dark-mode table.table td { background: #1e1e1e; color: #e4e6eb; border-color: #444; }
+body.dark-mode input, body.dark-mode textarea { background: #2a2a2a; color: #fff; border: 1px solid #555; }
+body.dark-mode .footer { color: #aaa; }
 
-    /* ✅ Input default */
-    input,
-    textarea {
-      border: none;
-      outline: none;
-      width: 100%;
-      background: transparent;
-    }
+/* ================= Print ================= */
+@media print {
+  body, #invoiceBox {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  .invoice-header, .invoice-title, h3, h4, strong, .grand-total, .footer {
+    color: #000000 !important;
+  }
+  table.table th {
+    background: #f1f1f1 !important;
+    color: #000000 !important;
+    border: 1px solid #000 !important;
+  }
+  table.table td {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: 1px solid #000 !important;
+  }
+  .no-print { display: none !important; }
+  th.no-print, td.no-print { display: none !important; }
+}
 
-    input:focus,
-    textarea:focus {
-      border: 1px solid #0d6efd;
-      border-radius: 4px;
-      background: #fff;
-    }
-
-    input::placeholder,
-    textarea::placeholder {
-      color: #6c757d;
-      opacity: 1;
-    }
-
-    /* ✅ Dark Mode */
-    body.dark-mode {
-      background: #212529;
-      color: #f8f9fa;
-    }
-
-    body.dark-mode .invoice-container {
-      background: #2c3034;
-      color: #f8f9fa;
-    }
-
-    body.dark-mode input,
-    body.dark-mode textarea {
-      color: #ffffff !important;
-      background: transparent !important;
-    }
-
-    body.dark-mode input::placeholder,
-    body.dark-mode textarea::placeholder {
-      color: #aaa !important;
-    }
-
-    /* ✅ Gambar produk */
-    .product-img {
-      width: 60px;
-      height: 60px;
-      object-fit: cover;
-      border: 1px solid #000;
-      border-radius: 4px;
-    }
-  </style>
+/* ================= Mobile Responsive ================= */
+@media (max-width: 768px) {
+  #invoiceBox { padding: 20px; }
+  .invoice-title { font-size: 20px; }
+  .brand-text { font-size: 18px; }
+  table.table th, table.table td { font-size: 14px; padding: 6px; }
+}
+</style>
 </head>
-
 <body>
-  <div class="container my-4">
-    <div class="invoice-container" id="invoice">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>INVOICE</h2>
-        <div>
-          <strong>TRADESOUNDS</strong><br />
-          <small><input type="text" placeholder="Alamat" /></small>
-        </div>
-      </div>
-
-      <!-- Info -->
-      <div class="row mb-3">
-        <div class="col-md-6">
-          <label><strong>Kepada:</strong></label>
-          <input type="text" placeholder="Nama Pelanggan" />
-          <textarea rows="2" placeholder="Alamat Pelanggan"></textarea>
-        </div>
-        <div class="col-md-6 text-md-end">
-          <label><strong>Tanggal:</strong></label>
-          <input type="date" /><br />
-          <label><strong>No Invoice:</strong></label>
-          <input type="text" placeholder="INV-001" />
-        </div>
-      </div>
-
-      <!-- Tabel Produk -->
-      <table class="table table-bordered align-middle" id="invoiceTable">
-        <thead class="table-light">
-          <tr>
-            <th>Produk</th>
-            <th>Gambar</th>
-            <th>Qty</th>
-            <th>Harga</th>
-            <th>Total</th>
-            <th>Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><input type="text" placeholder="Nama Produk" /></td>
-            <td>
-              <label class="btn btn-outline-primary btn-sm w-100">
-                Upload Gambar
-                <input type="file" accept="image/*" onchange="previewProductImage(this)" hidden />
-              </label>
-              <img class="product-img mt-1" style="display:none;" />
-            </td>
-            <td><input type="number" value="1" onchange="updateTotal(this)" /></td>
-            <td><input type="number" value="0" onchange="updateTotal(this)" /></td>
-            <td class="item-total">0</td>
-            <td><button class="btn btn-danger btn-sm" onclick="removeRow(this)">Hapus</button></td>
-          </tr>
-        </tbody>
-      </table>
-
-      <button class="btn btn-primary btn-sm my-2" onclick="addItem()">Tambah Produk</button>
-
-      <!-- Total -->
-      <div class="text-end mt-3">
-        <h5>Total: Rp <span id="grandTotal">0</span></h5>
-      </div>
+<div class="container my-4">
+  <!-- Form Input -->
+  <div class="card shadow-sm mb-4 no-print">
+    <div class="card-body d-flex justify-content-between align-items-center flex-wrap">
+      <h4 class="card-title mb-2">Form Input Invoice</h4>
+      <button id="darkModeToggle" class="btn btn-outline-dark ms-auto">🌙 Dark Mode</button>
     </div>
-
-    <!-- Tombol Aksi -->
-    <div class="mt-3 d-flex justify-content-center flex-wrap gap-2">
-      <button class="btn btn-success" onclick="generatePDF()">Download PDF</button>
-      <button class="btn btn-secondary" onclick="window.print()">Print</button>
-      <button class="btn btn-dark" onclick="toggleDarkMode()">Dark Mode</button>
+    <hr>
+    <div class="card-body">
+      <div class="mb-3">
+        <label class="form-label">Nama Brand:</label>
+        <input type="text" id="brandNameInput" class="form-control" placeholder="Misalnya: TRADESOUNDS" />
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Kepada Yth.:</label>
+        <input type="text" id="billto" class="form-control" />
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Jatuh Tempo:</label>
+        <input type="date" id="dueDateInput" class="form-control" />
+      </div> 
+      <div class="mb-3">
+        <label class="form-label">Ganti Logo:</label>
+        <input type="file" id="logoInput" class="form-control" accept="image/*" />
+      </div>
+      <button onclick="addItem()" class="btn btn-primary me-2">Tambah Produk</button>
+      <button onclick="window.print(); clearData()" class="btn btn-secondary me-2">Print</button>
+      <button onclick="downloadPDF(); clearData()" class="btn btn-success">Unduh PDF</button>
     </div>
   </div>
 
-  <script>
-    function addItem() {
-      let table = document.getElementById("invoiceTable").getElementsByTagName("tbody")[0];
-      let row = table.insertRow();
-      row.innerHTML = `
-        <td><input type="text" placeholder="Nama Produk" /></td>
-        <td>
-          <label class="btn btn-outline-primary btn-sm w-100">
-            Upload Gambar
-            <input type="file" accept="image/*" onchange="previewProductImage(this)" hidden />
-          </label>
-          <img class="product-img mt-1" style="display:none;" />
-        </td>
-        <td><input type="number" value="1" onchange="updateTotal(this)" /></td>
-        <td><input type="number" value="0" onchange="updateTotal(this)" /></td>
-        <td class="item-total">0</td>
-        <td><button class="btn btn-danger btn-sm" onclick="removeRow(this)">Hapus</button></td>
-      `;
-    }
+  <!-- Invoice -->
+  <div class="card shadow" id="invoiceBox">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center invoice-header">
+        <div class="brand-text">
+          <img id="logoImg" src="" alt="Logo" style="max-height: 60px;" />
+        </div>
+        <div class="text-end">
+          <h3 class="fw-bold mb-1" id="brandName">TRADESOUNDS</h3>
+          <p class="mb-0 small">
+            Komplek Automotif Cibubur Point<br />
+            Blok E No.17, Cimanggis, Depok 16545<br />
+            📞 0813-1862-4308
+          </p>
+        </div>
+      </div>
 
-    function removeRow(button) {
-      let row = button.closest("tr");
-      row.remove();
-      calculateGrandTotal();
-    }
+      <h4 class="mb-4 text-center invoice-title">Invoice</h4>
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <p class="mb-1"><strong>No. Invoice:</strong> <span id="invoiceNum"></span></p>
+          <p class="mb-1"><strong>Tanggal Invoice:</strong> <span id="invoiceDate"></span></p>
+          <p class="mb-1"><strong>Jatuh Tempo:</strong> <span id="dueDate"></span></p>
+        </div>
+        <div class="col-md-6 text-md-end">
+          <p><strong>Kepada Yth.:</strong><br /><span id="billToText"></span></p>
+        </div>
+      </div>
 
-    function updateTotal(input) {
-      let row = input.closest("tr");
-      let qty = row.querySelector('td:nth-child(3) input').value;
-      let price = row.querySelector('td:nth-child(4) input').value;
-      let total = qty * price;
-      row.querySelector(".item-total").innerText = total;
-      calculateGrandTotal();
-    }
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle text-center" id="invoiceTable">
+          <thead>
+            <tr>
+              <th>NO</th>
+              <th>Gambar</th>
+              <th>Deskripsi</th>
+              <th>Qty</th>
+              <th>Harga Satuan</th>
+              <th>Total</th>
+              <th class="no-print">Aksi</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
 
-    function calculateGrandTotal() {
-      let totals = document.querySelectorAll(".item-total");
-      let grandTotal = 0;
-      totals.forEach(cell => {
-        grandTotal += parseFloat(cell.innerText) || 0;
-      });
-      document.getElementById("grandTotal").innerText = grandTotal;
-    }
+      <div class="text-end grand-total border-top pt-3">
+        Jumlah Tagihan: Rp <span id="grandTotal">0</span>
+      </div>
 
-    function previewProductImage(input) {
-      let file = input.files[0];
-      if (file) {
-        let reader = new FileReader();
-        reader.onload = function (e) {
-          let img = input.closest("td").querySelector(".product-img");
-          img.src = e.target.result;
-          img.style.display = "block";
-        };
-        reader.readAsDataURL(file);
-      }
-    }
+      <div class="mt-5 text-end">
+        <p><strong>Authorized Signature</strong></p>
+        <div class="signature-space"></div>
+        <p class="fw-bold">___________________________</p>
+        <p class="mb-0" id="brandNameFooter">TRADESOUNDS</p>
+      </div>
 
-    function generatePDF() {
-      let element = document.getElementById("invoice");
-      let opt = {
-        margin: 0.5,
-        filename: 'invoice.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-      };
-      html2pdf().from(element).set(opt).save();
-    }
+      <div class="footer mt-5">Terima kasih atas kepercayaan Anda kepada kami.</div>
+    </div>
+  </div>
+</div>
 
-    function toggleDarkMode() {
-      document.body.classList.toggle("dark-mode");
+<script>
+let count = 0;
+
+// Dark Mode Toggle
+const toggleBtn = document.getElementById("darkModeToggle");
+toggleBtn.addEventListener("click", () => {
+  document.body.classList.toggle("dark-mode");
+  toggleBtn.innerText = document.body.classList.contains("dark-mode") ? "☀️ Light Mode" : "🌙 Dark Mode";
+});
+
+function saveData() {
+  const data = {
+    billto: document.getElementById("billto").value,
+    dueDate: document.getElementById("dueDate").innerText,
+    table: document.querySelector("#invoiceTable tbody").innerHTML,
+    grandTotal: document.getElementById("grandTotal").innerText,
+    invoiceNum: document.getElementById("invoiceNum").innerText,
+    invoiceDate: document.getElementById("invoiceDate").innerText,
+    logo: document.getElementById("logoImg").src,
+    brand: document.getElementById("brandName").innerText,
+    count: count
+  };
+  localStorage.setItem("invoiceData", JSON.stringify(data));
+}
+
+function loadData() {
+  const data = JSON.parse(localStorage.getItem("invoiceData"));
+  if (data) {
+    document.getElementById("billto").value = data.billto || "";
+    document.getElementById("billToText").innerText = data.billto || "";
+    document.getElementById("dueDate").innerText = data.dueDate || "";
+    document.querySelector("#invoiceTable tbody").innerHTML = data.table || "";
+    document.getElementById("grandTotal").innerText = data.grandTotal || "0";
+    document.getElementById("invoiceNum").innerText = data.invoiceNum || "";
+    document.getElementById("invoiceDate").innerText = data.invoiceDate || "";
+    if (data.logo) document.getElementById("logoImg").src = data.logo;
+    if (data.brand) {
+      document.getElementById("brandName").innerText = data.brand;
+      document.getElementById("brandNameFooter").innerText = data.brand;
+      document.getElementById("brandNameInput").value = data.brand;
     }
-  </script>
+    count = data.count || 0;
+  }
+}
+
+function clearData() { localStorage.removeItem("invoiceData"); }
+
+function generateInvoiceNum() {
+  const today = new Date();
+  const y = today.getFullYear();
+  const m = String(today.getMonth() + 1).padStart(2, "0");
+  const d = String(today.getDate()).padStart(2, "0");
+  const nomor = count.toString().padStart(3, "0");
+  document.getElementById("invoiceNum").innerText = `TRDS-${y}${m}${d}-${nomor}`;
+  saveData();
+}
+
+function addItem() {
+  count++;
+  const tableBody = document.querySelector("#invoiceTable tbody");
+  const row = tableBody.insertRow(-1);
+  row.innerHTML = `
+    <td>${count}</td>
+    <td>
+      <input type="file" accept="image/*" onchange="uploadProductImage(this)" class="form-control form-control-sm no-print" />
+      <img class="product-img mt-1" />
+    </td>
+    <td contenteditable="true" oninput="saveData()">Deskripsi Produk</td>
+    <td contenteditable="true" oninput="updateTotal(this)">1</td>
+    <td contenteditable="true" oninput="updateTotal(this)">0</td>
+    <td class="rowTotal">Rp 0</td>
+    <td class="no-print text-center">
+      <i class="fas fa-trash text-danger" style="cursor:pointer;" onclick="deleteRow(this)"></i>
+    </td>
+  `;
+  generateInvoiceNum();
+  saveData();
+}
+
+function uploadProductImage(input) {
+  const file = input.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      input.nextElementSibling.src = ev.target.result;
+      saveData();
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+function updateTotal(cell) {
+  const row = cell.parentElement;
+  const qty = parseInt(row.cells[3].innerText) || 0;
+  const price = parseInt(row.cells[4].innerText) || 0;
+  const total = qty * price;
+  row.cells[5].innerText = "Rp " + total.toLocaleString("id-ID");
+  recalcGrandTotal();
+  saveData();
+}
+
+function deleteRow(btn) {
+  btn.parentElement.parentElement.remove();
+  recalcGrandTotal();
+  saveData();
+}
+
+function recalcGrandTotal() {
+  const rows = document.querySelectorAll("#invoiceTable tbody tr");
+  let sum = 0;
+  rows.forEach((row) => {
+    const val = row.cells[5].innerText.replace("Rp ", "").replace(/\./g, "");
+    sum += parseInt(val) || 0;
+  });
+  document.getElementById("grandTotal").innerText = sum.toLocaleString("id-ID");
+}
+
+// Event listeners
+document.getElementById("billto").addEventListener("input", () => {
+  document.getElementById("billToText").innerText = document.getElementById("billto").value;
+  saveData();
+});
+
+document.getElementById("dueDateInput").addEventListener("change", () => {
+  const val = document.getElementById("dueDateInput").value;
+  if (val) {
+    const dateObj = new Date(val);
+    document.getElementById("dueDate").innerText = dateObj.toLocaleDateString("id-ID");
+    saveData();
+  }
+});
+
+document.getElementById("brandNameInput").addEventListener("input", () => {
+  const brand = document.getElementById("brandNameInput").value;
+  document.getElementById("brandName").innerText = brand || "TRADESOUNDS";
+  document.getElementById("brandNameFooter").innerText = brand || "TRADESOUNDS";
+  saveData();
+});
+
+document.getElementById("logoInput").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      document.getElementById("logoImg").src = ev.target.result;
+      saveData();
+    };
+    reader.readAsDataURL(file);
+  }
+});
+
+function setDate() {
+  const today = new Date();
+  document.getElementById("invoiceDate").innerText = today.toLocaleDateString("id-ID");
+  saveData();
+}
+
+function downloadPDF() {
+  const element = document.getElementById("invoiceBox");
+  const nama = document.getElementById("billto").value || "Customer";
+  const today = new Date();
+  const tanggal = today.toISOString().split("T")[0];
+  const fileName = `${nama} - ${document.getElementById("brandName").innerText} - ${tanggal}.pdf`;
+
+  const wasDark = document.body.classList.contains("dark-mode");
+  if (wasDark) { document.body.classList.remove("dark-mode"); }
+
+  const noPrintElements = document.querySelectorAll(".no-print");
+  noPrintElements.forEach(el => el.style.display = "none");
+
+  const opt = {
+    margin: 0.5,
+    filename: fileName,
+    image: { type: "jpeg", quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
+  };
+
+  html2pdf().set(opt).from(element).save().then(() => {
+    noPrintElements.forEach(el => el.style.display = "");
+    if (wasDark) { document.body.classList.add("dark-mode"); }
+  });
+}
+
+window.onload = () => {
+  loadData();
+  if (!document.getElementById("invoiceDate").innerText) { setDate(); }
+  if (!document.getElementById("invoiceNum").innerText) { generateInvoiceNum(); }
+};
+</script>
 </body>
 </html>
