@@ -505,6 +505,13 @@ function downloadPDF() {
   });
 }
 
+
+/* ---------- Auto Save Interval ---------- */
+setInterval(() => {
+  saveData();
+}, 1000); // auto-save setiap 5 detik
+
+
 /* ---------- Init2 ---------- */
 window.addEventListener("load", () => {
   loadData();
