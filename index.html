@@ -69,7 +69,12 @@ body.dark-mode table.table td { background: #1e1e1e; color: #e4e6eb; border-colo
 body.dark-mode input, body.dark-mode textarea { background: #2a2a2a; color: #fff; border: 1px solid #555; }
 body.dark-mode .footer { color: #aaa; }
 
-/* Print Mode */
+/* Smooth transition */
+body, #invoiceBox, table, input, textarea {
+  transition: background 0.3s, color 0.3s, border 0.3s;
+}
+
+/* ================= Print ================= */
 @media print {
   body, #invoiceBox {
     background: #ffffff !important;
@@ -150,6 +155,7 @@ body.dark-mode .footer { color: #aaa; }
           <p class="mb-0 small">
             Komplek Automotif Cibubur Point<br />
             Blok E No.17, Cimanggis, Depok 16545<br />
+            📞 0813-1862-4308
           </p>
         </div>
       </div>
@@ -324,6 +330,7 @@ function recalcGrandTotal() {
   document.getElementById("grandTotal").innerText = sum.toLocaleString("id-ID");
 }
 
+// Event listeners
 document.getElementById("billto").addEventListener("input", () => {
   document.getElementById("billToText").innerText = document.getElementById("billto").value;
   saveData();
@@ -385,8 +392,16 @@ function downloadPDF() {
   };
 
   html2pdf().set(opt).from(element).save().then(() => {
+    invoiceBox.style.border = oldBorder;
+    invoiceBox.style.boxShadow = oldShadow;
     noPrintElements.forEach(el => el.style.display = "");
-    if (wasDark) document.body.classList.add("dark-mode");
+    if (wasDark) { document.body.classList.add("dark-mode"); }
+  }).catch((err) => {
+    console.error("html2pdf error:", err);
+    invoiceBox.style.border = oldBorder;
+    invoiceBox.style.boxShadow = oldShadow;
+    noPrintElements.forEach(el => el.style.display = "");
+    if (wasDark) { document.body.classList.add("dark-mode"); }
   });
 }
 
