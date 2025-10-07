@@ -130,9 +130,10 @@ body.dark-mode .footer { color: #aaa; }
         <label class="form-label">Ganti Logo:</label>
         <input type="file" id="logoInput" class="form-control" accept="image/*" />
       </div>
-      <button id="addProductBtn" class="btn btn-primary me-2 mb-3">Tambah Produk</button>
-      <button id="printBtn" class="btn btn-secondary me-2 mb-3">Print</button>
-      <button id="downloadBtn" class="btn btn-success mb-3">Unduh PDF</button>
+<button id="addProductBtn" class="btn btn-primary me-2 mb-3">Tambah Produk</button>
+<button id="printBtn" class="btn btn-secondary me-2 mb-3">Print</button>
+<button id="downloadBtn" class="btn btn-success mb-3">Unduh PDF</button>
+
     </div>
   </div>
 
@@ -319,20 +320,8 @@ window.addEventListener("load",()=>{
   if(document.querySelectorAll("#invoiceTable tbody tr").length===0){appendRow({qty:1,price:0,desc:"Deskripsi Produk"});saveData();}
 });
 
-// autosave periodik (safety)
+// autosave periodik (optional safety)
 setInterval(saveData,5000);
-
-// simpan data sebelum tab ditutup atau direfresh
-window.addEventListener("beforeunload", () => {
-  saveData();
-});
-
-// simpan data juga saat tab berpindah atau minimize
-document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "hidden") {
-    saveData();
-  }
-});
 </script>
 </body>
 </html>
