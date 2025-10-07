@@ -3,19 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <title>Invoice Generator - TRADESOUNDS</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!-- 🚀 responsive meta -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" /> 
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" /> 
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
 <style>
-/* ================= Base ================= */
 body { background: #f8f9fa; }
 #invoiceBox { 
   background: #fff; 
-  padding: 40px; 
+  padding: 10px; 
   border: 1px solid #dee2e6; 
   border-radius: 10px; 
   box-shadow: 0 4px 10px rgba(0,0,0,0.08); 
-  overflow-x: auto;   /* 🚀 tabel bisa geser di layar kecil */
+  overflow-x: auto;
 }
 
 /* Header */
@@ -23,12 +24,11 @@ body { background: #f8f9fa; }
   border-bottom: 2px solid #495057; 
   padding-bottom: 15px; 
   margin-bottom: 20px; 
-  flex-wrap: wrap;   /* 🚀 supaya header tidak pecah di HP */
+  flex-wrap: wrap;   
 }
 .invoice-title { font-size: 26px; font-weight: 700; text-transform: uppercase; }
 .brand-text   { font-size: 24px; font-weight: 800; color: #212529; }
 
-/* Table */
 table.table th { 
   background: #f1f3f5; 
   font-weight: 600; 
@@ -50,18 +50,12 @@ input, textarea {
   padding: 5px 8px;
 }
 
-.grand-total { font-size: 18px; font-weight: bold; }
-.signature-space { height: 80px; }
-
-.footer { 
-  text-align: center; 
-  margin-top: 40px; 
-  font-size: 14px; 
-  color: #6c757d; 
-  font-weight: 500; 
+.product-img {
+  max-height: 50px;
+  max-width: 80px;
 }
 
-/* ================= Dark Mode ================= */
+/* Dark Mode */
 body.dark-mode { background: #121212; color: #e4e6eb; }
 body.dark-mode #invoiceBox { background: #1e1e1e; border: 1px solid #333; }
 body.dark-mode .invoice-header { border-color: #555; }
@@ -73,15 +67,9 @@ body.dark-mode strong { color: #f5f5f5 !important; }
 body.dark-mode table.table th { background: #2c2c2c; color: #f1f1f1; border-color: #444; }
 body.dark-mode table.table td { background: #1e1e1e; color: #e4e6eb; border-color: #444; }
 body.dark-mode input, body.dark-mode textarea { background: #2a2a2a; color: #fff; border: 1px solid #555; }
-body.dark-mode .grand-total { color: #fff; border-color: #444 !important; }
 body.dark-mode .footer { color: #aaa; }
 
-/* Smooth transition */
-body, #invoiceBox, table, input, textarea {
-  transition: background 0.3s, color 0.3s, border 0.3s;
-}
-
-/* ================= Print ================= */
+/* Print Mode */
 @media print {
   body, #invoiceBox {
     background: #ffffff !important;
@@ -102,21 +90,15 @@ body, #invoiceBox, table, input, textarea {
     color: #000000 !important;
     border: 1px solid #000 !important;
   }
-  .signature-space { border-bottom: 1px solid #000 !important; }
   .no-print { display: none !important; }
   th.no-print, td.no-print { display: none !important; }
 }
 
-/* ================= Mobile Responsive ================= */
 @media (max-width: 768px) {
   #invoiceBox { padding: 20px; }
   .invoice-title { font-size: 20px; }
   .brand-text { font-size: 18px; }
   table.table th, table.table td { font-size: 14px; padding: 6px; }
-  .grand-total { font-size: 16px; }
-  .card-body { padding: 15px; }
-  .invoice-header { text-align: center; }
-  .invoice-header .text-end { text-align: center !important; width: 100%; margin-top: 10px; }
 }
 </style>
 </head>
@@ -126,10 +108,17 @@ body, #invoiceBox, table, input, textarea {
   <div class="card shadow-sm mb-4 no-print">
     <div class="card-body d-flex justify-content-between align-items-center flex-wrap">
       <h4 class="card-title mb-2">Form Input Invoice</h4>
-      <button id="darkModeToggle" class="btn btn-outline-dark ms-auto">🌙 Dark Mode</button>
+      <div class="ms-auto">
+        <button id="darkModeToggle" class="btn btn-outline-dark me-2">🌙 Dark Mode</button>
+        <button id="clearDataBtn" class="btn btn-outline-danger">🗑️ Clear Data</button>
+      </div>
     </div>
     <hr>
     <div class="card-body">
+      <div class="mb-3">
+        <label class="form-label">Nama Brand:</label>
+        <input type="text" id="brandNameInput" class="form-control" placeholder="Misalnya: TRADESOUNDS" />
+      </div>
       <div class="mb-3">
         <label class="form-label">Kepada Yth.:</label>
         <input type="text" id="billto" class="form-control" />
@@ -142,9 +131,10 @@ body, #invoiceBox, table, input, textarea {
         <label class="form-label">Ganti Logo:</label>
         <input type="file" id="logoInput" class="form-control" accept="image/*" />
       </div>
-      <button onclick="addItem()" class="btn btn-primary me-2">Tambah Produk</button>
-      <button onclick="window.print(); clearData()" class="btn btn-secondary me-2">Print</button>
-      <button onclick="downloadPDF(); clearData()" class="btn btn-success">Unduh PDF</button>
+      <button onclick="addItem()" class="btn btn-primary me-2 mb-3">Tambah Produk</button>
+<button onclick="window.print()" class="btn btn-secondary me-2 mb-3">Print</button>
+<button onclick="downloadPDF()" class="btn btn-success mb-3">Unduh PDF</button>
+
     </div>
   </div>
 
@@ -156,11 +146,10 @@ body, #invoiceBox, table, input, textarea {
           <img id="logoImg" src="" alt="Logo" style="max-height: 60px;" />
         </div>
         <div class="text-end">
-          <h3 class="fw-bold mb-1">TRADESOUNDS</h3>
+          <h3 class="fw-bold mb-1" id="brandName">TRADESOUNDS</h3>
           <p class="mb-0 small">
             Komplek Automotif Cibubur Point<br />
             Blok E No.17, Cimanggis, Depok 16545<br />
-            📞 0813-1862-4308
           </p>
         </div>
       </div>
@@ -182,6 +171,7 @@ body, #invoiceBox, table, input, textarea {
           <thead>
             <tr>
               <th>NO</th>
+              <th>Gambar</th>
               <th>Deskripsi</th>
               <th>Qty</th>
               <th>Harga Satuan</th>
@@ -201,10 +191,10 @@ body, #invoiceBox, table, input, textarea {
         <p><strong>Authorized Signature</strong></p>
         <div class="signature-space"></div>
         <p class="fw-bold">___________________________</p>
-        <p class="mb-0">TRADESOUNDS</p>
+        <p class="mb-0" id="brandNameFooter">TRADESOUNDS</p>
       </div>
 
-      <div class="footer">Terima kasih atas kepercayaan Anda kepada kami.</div>
+      <div class="footer mt-5">Terima kasih atas kepercayaan Anda kepada kami.</div>
     </div>
   </div>
 </div>
@@ -219,6 +209,7 @@ toggleBtn.addEventListener("click", () => {
   toggleBtn.innerText = document.body.classList.contains("dark-mode") ? "☀️ Light Mode" : "🌙 Dark Mode";
 });
 
+// Simpan data ke localStorage
 function saveData() {
   const data = {
     billto: document.getElementById("billto").value,
@@ -228,11 +219,13 @@ function saveData() {
     invoiceNum: document.getElementById("invoiceNum").innerText,
     invoiceDate: document.getElementById("invoiceDate").innerText,
     logo: document.getElementById("logoImg").src,
+    brand: document.getElementById("brandName").innerText,
     count: count
   };
   localStorage.setItem("invoiceData", JSON.stringify(data));
 }
 
+// Load data dari localStorage
 function loadData() {
   const data = JSON.parse(localStorage.getItem("invoiceData"));
   if (data) {
@@ -244,11 +237,22 @@ function loadData() {
     document.getElementById("invoiceNum").innerText = data.invoiceNum || "";
     document.getElementById("invoiceDate").innerText = data.invoiceDate || "";
     if (data.logo) document.getElementById("logoImg").src = data.logo;
+    if (data.brand) {
+      document.getElementById("brandName").innerText = data.brand;
+      document.getElementById("brandNameFooter").innerText = data.brand;
+      document.getElementById("brandNameInput").value = data.brand;
+    }
     count = data.count || 0;
   }
 }
 
-function clearData() { localStorage.removeItem("invoiceData"); }
+// Tombol Clear Data
+document.getElementById("clearDataBtn").addEventListener("click", () => {
+  if (confirm("Yakin ingin menghapus semua data invoice?")) {
+    localStorage.removeItem("invoiceData");
+    location.reload();
+  }
+});
 
 function generateInvoiceNum() {
   const today = new Date();
@@ -266,23 +270,40 @@ function addItem() {
   const row = tableBody.insertRow(-1);
   row.innerHTML = `
     <td>${count}</td>
+    <td>
+      <input type="file" accept="image/*" onchange="uploadProductImage(this)" class="form-control form-control-sm no-print" />
+      <img class="product-img mt-1" />
+    </td>
     <td contenteditable="true" oninput="saveData()">Deskripsi Produk</td>
     <td contenteditable="true" oninput="updateTotal(this)">1</td>
     <td contenteditable="true" oninput="updateTotal(this)">0</td>
     <td class="rowTotal">Rp 0</td>
-   <td class="no-print text-center" style="cursor:pointer;" onclick="deleteRow(this)">🗑️</td>
-
+    <td class="no-print text-center">
+      <i class="fas fa-trash text-danger" style="cursor:pointer;" onclick="deleteRow(this)"></i>
+    </td>
   `;
   generateInvoiceNum();
   saveData();
 }
 
+function uploadProductImage(input) {
+  const file = input.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      input.nextElementSibling.src = ev.target.result;
+      saveData();
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
 function updateTotal(cell) {
   const row = cell.parentElement;
-  const qty = parseInt(row.cells[2].innerText) || 0;
-  const price = parseInt(row.cells[3].innerText) || 0;
+  const qty = parseInt(row.cells[3].innerText) || 0;
+  const price = parseInt(row.cells[4].innerText) || 0;
   const total = qty * price;
-  row.cells[4].innerText = "Rp " + total.toLocaleString("id-ID");
+  row.cells[5].innerText = "Rp " + total.toLocaleString("id-ID");
   recalcGrandTotal();
   saveData();
 }
@@ -297,7 +318,7 @@ function recalcGrandTotal() {
   const rows = document.querySelectorAll("#invoiceTable tbody tr");
   let sum = 0;
   rows.forEach((row) => {
-    const val = row.cells[4].innerText.replace("Rp ", "").replace(/\./g, "");
+    const val = row.cells[5].innerText.replace("Rp ", "").replace(/\./g, "");
     sum += parseInt(val) || 0;
   });
   document.getElementById("grandTotal").innerText = sum.toLocaleString("id-ID");
@@ -315,6 +336,13 @@ document.getElementById("dueDateInput").addEventListener("change", () => {
     document.getElementById("dueDate").innerText = dateObj.toLocaleDateString("id-ID");
     saveData();
   }
+});
+
+document.getElementById("brandNameInput").addEventListener("input", () => {
+  const brand = document.getElementById("brandNameInput").value;
+  document.getElementById("brandName").innerText = brand || "TRADESOUNDS";
+  document.getElementById("brandNameFooter").innerText = brand || "TRADESOUNDS";
+  saveData();
 });
 
 document.getElementById("logoInput").addEventListener("change", (e) => {
@@ -340,19 +368,13 @@ function downloadPDF() {
   const nama = document.getElementById("billto").value || "Customer";
   const today = new Date();
   const tanggal = today.toISOString().split("T")[0];
-  const fileName = `${nama} - TRADESOUNDS - ${tanggal}.pdf`;
+  const fileName = `${nama} - ${document.getElementById("brandName").innerText} - ${tanggal}.pdf`;
 
   const wasDark = document.body.classList.contains("dark-mode");
-  if (wasDark) { document.body.classList.remove("dark-mode"); }
+  if (wasDark) document.body.classList.remove("dark-mode");
 
   const noPrintElements = document.querySelectorAll(".no-print");
   noPrintElements.forEach(el => el.style.display = "none");
-
-  const invoiceBox = document.getElementById("invoiceBox");
-  const oldBorder = invoiceBox.style.border;
-  const oldShadow = invoiceBox.style.boxShadow;
-  invoiceBox.style.border = "none";
-  invoiceBox.style.boxShadow = "none";
 
   const opt = {
     margin: 0.5,
@@ -363,23 +385,15 @@ function downloadPDF() {
   };
 
   html2pdf().set(opt).from(element).save().then(() => {
-    invoiceBox.style.border = oldBorder;
-    invoiceBox.style.boxShadow = oldShadow;
     noPrintElements.forEach(el => el.style.display = "");
-    if (wasDark) { document.body.classList.add("dark-mode"); }
-  }).catch((err) => {
-    console.error("html2pdf error:", err);
-    invoiceBox.style.border = oldBorder;
-    invoiceBox.style.boxShadow = oldShadow;
-    noPrintElements.forEach(el => el.style.display = "");
-    if (wasDark) { document.body.classList.add("dark-mode"); }
+    if (wasDark) document.body.classList.add("dark-mode");
   });
 }
 
 window.onload = () => {
   loadData();
-  if (!document.getElementById("invoiceDate").innerText) { setDate(); }
-  if (!document.getElementById("invoiceNum").innerText) { generateInvoiceNum(); }
+  if (!document.getElementById("invoiceDate").innerText) setDate();
+  if (!document.getElementById("invoiceNum").innerText) generateInvoiceNum();
 };
 </script>
 </body>
