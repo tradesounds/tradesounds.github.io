@@ -200,336 +200,111 @@ body.dark-mode .footer { color: #aaa; }
 </div>
 
 <script>
-/* ---------- State & Helpers ---------- */
-let count = 0; // kept as "items added count"
+let count = 0;
 const STORAGE_KEY = "invoiceData_v2";
 
-function formatRupiah(num) {
-  return (Number(num) || 0).toLocaleString("id-ID");
-}
-function onlyDigits(text) {
-  return (text || "").toString().replace(/\D/g, "") || "0";
-}
+function formatRupiah(num){ return (Number(num)||0).toLocaleString("id-ID"); }
+function onlyDigits(text){ return (text||"").toString().replace(/\D/g,"") || "0"; }
 
-/* ---------- Save / Load structured data ---------- */
-function saveData() {
+function saveData(){
   const rows = Array.from(document.querySelectorAll("#invoiceTable tbody tr"));
-  const items = rows.map((row) => {
-    return {
-      desc: row.querySelector(".desc")?.textContent || "",
-      qty: parseInt(onlyDigits(row.querySelector(".qty")?.textContent)) || 0,
-      price: parseInt(onlyDigits(row.querySelector(".price")?.textContent)) || 0,
-      image: row.querySelector("img.product-img")?.src || ""
-    };
-  });
-
-  const data = {
-    billto: document.getElementById("billto").value || "",
-    dueDateISO: document.getElementById("dueDateInput").value || "",
-    dueDateDisplay: document.getElementById("dueDate").textContent || "",
+  const items = rows.map((r)=>({
+    desc:r.querySelector(".desc")?.textContent||"",
+    qty:parseInt(onlyDigits(r.querySelector(".qty")?.textContent))||0,
+    price:parseInt(onlyDigits(r.querySelector(".price")?.textContent))||0,
+    image:r.querySelector("img.product-img")?.src||""
+  }));
+  const data={
+    billto:billto.value||"",
+    dueDateISO:dueDateInput.value||"",
+    dueDateDisplay:dueDate.textContent||"",
     items,
-    grandTotal: onlyDigits(document.getElementById("grandTotal").textContent),
-    invoiceNum: document.getElementById("invoiceNum").textContent || "",
-    invoiceDate: document.getElementById("invoiceDate").textContent || "",
-    logo: document.getElementById("logoImg").src || "",
-    brand: document.getElementById("brandName").textContent || "",
+    grandTotal:onlyDigits(grandTotal.textContent),
+    invoiceNum:invoiceNum.textContent||"",
+    invoiceDate:invoiceDate.textContent||"",
+    logo:logoImg.src||"",
+    brand:brandName.textContent||"",
     count,
-    darkMode: document.body.classList.contains("dark-mode")
+    darkMode:document.body.classList.contains("dark-mode")
   };
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  } catch (e) {
-    console.warn("Gagal menyimpan ke localStorage:", e);
-  }
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
 }
 
-function loadData() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) return;
-  let data;
-  try {
-    data = JSON.parse(raw);
-  } catch (e) {
-    console.warn("Data lokal korup, dibersihkan:", e);
-    localStorage.removeItem(STORAGE_KEY);
-    return;
-  }
-
-  // meta
-  document.getElementById("billto").value = data.billto || "";
-  document.getElementById("billToText").textContent = data.billto || "";
-  if (data.dueDateISO) {
-    document.getElementById("dueDateInput").value = data.dueDateISO;
-    const dt = new Date(data.dueDateISO);
-    if (!isNaN(dt)) document.getElementById("dueDate").textContent = dt.toLocaleDateString("id-ID");
-  } else {
-    document.getElementById("dueDate").textContent = data.dueDateDisplay || "";
-  }
-
-  if (data.logo) document.getElementById("logoImg").src = data.logo;
-  if (data.brand) {
-    document.getElementById("brandName").textContent = data.brand;
-    document.getElementById("brandNameFooter").textContent = data.brand;
-    document.getElementById("brandNameInput").value = data.brand;
-  }
-
-  if (data.invoiceNum) document.getElementById("invoiceNum").textContent = data.invoiceNum;
-  if (data.invoiceDate) document.getElementById("invoiceDate").textContent = data.invoiceDate;
-
-  count = data.count || 0;
-
-  // dark mode
-  if (data.darkMode) document.body.classList.add("dark-mode");
-
-  // rebuild items
-  if (Array.isArray(data.items)) {
-    const tbody = document.querySelector("#invoiceTable tbody");
-    tbody.innerHTML = "";
-    data.items.forEach((it) => {
-      appendRow(it);
-    });
-  }
-
+function loadData(){
+  const raw=localStorage.getItem(STORAGE_KEY);
+  if(!raw)return;
+  const d=JSON.parse(raw);
+  billto.value=d.billto||"";
+  billToText.textContent=d.billto||"";
+  if(d.dueDateISO){dueDateInput.value=d.dueDateISO;const dt=new Date(d.dueDateISO);if(!isNaN(dt))dueDate.textContent=dt.toLocaleDateString("id-ID");}
+  else dueDate.textContent=d.dueDateDisplay||"";
+  if(d.logo)logoImg.src=d.logo;
+  if(d.brand){brandName.textContent=d.brand;brandNameFooter.textContent=d.brand;brandNameInput.value=d.brand;}
+  invoiceNum.textContent=d.invoiceNum||"";
+  invoiceDate.textContent=d.invoiceDate||"";
+  count=d.count||0;
+  if(d.darkMode)document.body.classList.add("dark-mode");
+  if(Array.isArray(d.items)){const tb=document.querySelector("#invoiceTable tbody");tb.innerHTML="";d.items.forEach(it=>appendRow(it));}
   recalcGrandTotal();
 }
 
-/* ---------- Row creation & handlers ---------- */
-function appendRow(item = {}) {
-  const tbody = document.querySelector("#invoiceTable tbody");
-  const row = document.createElement("tr");
+function appendRow(item={}){
+  const tb=document.querySelector("#invoiceTable tbody");
+  const row=document.createElement("tr");
+  row.innerHTML=`
+  <td class="no-cell"></td>
+  <td><input type="file" accept="image/*" class="form-control form-control-sm no-print file-input"/><img class="product-img mt-1" src="${item.image||""}"></td>
+  <td class="desc" contenteditable="true">${item.desc||"Deskripsi Produk"}</td>
+  <td class="qty" contenteditable="true">${item.qty??1}</td>
+  <td class="price" contenteditable="true">${item.price??0}</td>
+  <td class="rowTotal">Rp 0</td>
+  <td class="no-print text-center"><i class="fas fa-trash text-danger" style="cursor:pointer;"></i></td>`;
+  tb.appendChild(row);updateRowNumbering();recalcRow(row);
 
-  // cells
-  row.innerHTML = `
-    <td class="no-cell"></td>
-    <td>
-      <input type="file" accept="image/*" class="form-control form-control-sm no-print file-input" />
-      <img class="product-img mt-1" src="${item.image || ""}" alt="" />
-    </td>
-    <td class="desc" contenteditable="true">${escapeHtml(item.desc || "Deskripsi Produk")}</td>
-    <td class="qty" contenteditable="true">${item.qty != null ? item.qty : 1}</td>
-    <td class="price" contenteditable="true">${item.price != null ? item.price : 0}</td>
-    <td class="rowTotal">Rp 0</td>
-    <td class="no-print text-center">
-      <i class="fas fa-trash text-danger" style="cursor:pointer;" title="Hapus"></i>
-    </td>
-  `;
-
-  tbody.appendChild(row);
-  updateRowNumbering();
-
-  // refs
-  const fileInput = row.querySelector(".file-input");
-  const img = row.querySelector("img.product-img");
-  const desc = row.querySelector(".desc");
-  const qty = row.querySelector(".qty");
-  const price = row.querySelector(".price");
-  const deleteBtn = row.querySelector(".fa-trash");
-
-  // set initial total
-  recalcRow(row);
-
-  // file change
-  fileInput.addEventListener("change", (e) => {
-    const f = e.target.files && e.target.files[0];
-    if (!f) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      img.src = ev.target.result;
-      saveData();
-    };
-    reader.readAsDataURL(f);
-  });
-
-  // editable inputs
-  const updateHandler = () => {
-    recalcRow(row);
-    saveData();
-  };
-  desc.addEventListener("input", updateHandler);
-  qty.addEventListener("input", updateHandler);
-  price.addEventListener("input", updateHandler);
-
-  // delete
-  deleteBtn.addEventListener("click", () => {
-    row.remove();
-    updateRowNumbering();
-    recalcGrandTotal();
-    saveData();
-  });
-
-  // if item had image but no file input value (can't set file value) -- it's okay img shows
-  return row;
+  const f=row.querySelector(".file-input"),img=row.querySelector("img.product-img");
+  f.addEventListener("change",(e)=>{const file=e.target.files[0];if(file){const r=new FileReader();r.onload=(ev)=>{img.src=ev.target.result;saveData();};r.readAsDataURL(file);}});
+  const handler=()=>{recalcRow(row);saveData();};
+  row.querySelector(".desc").addEventListener("input",handler);
+  row.querySelector(".qty").addEventListener("input",handler);
+  row.querySelector(".price").addEventListener("input",handler);
+  row.querySelector(".fa-trash").addEventListener("click",()=>{row.remove();updateRowNumbering();recalcGrandTotal();saveData();});
 }
 
-function recalcRow(row) {
-  const qtyCell = row.querySelector(".qty");
-  const priceCell = row.querySelector(".price");
-  const totalCell = row.querySelector(".rowTotal");
+function recalcRow(row){const q=parseInt(onlyDigits(row.querySelector(".qty").textContent))||0;const p=parseInt(onlyDigits(row.querySelector(".price").textContent))||0;row.querySelector(".rowTotal").textContent="Rp "+formatRupiah(q*p);recalcGrandTotal();}
+function recalcGrandTotal(){let s=0;document.querySelectorAll(".rowTotal").forEach(c=>s+=parseInt(onlyDigits(c.textContent))||0);grandTotal.textContent=formatRupiah(s);}
+function updateRowNumbering(){document.querySelectorAll("#invoiceTable tbody tr").forEach((r,i)=>r.querySelector(".no-cell").textContent=i+1);}
+function generateInvoiceNum(){const t=new Date(),y=t.getFullYear(),m=String(t.getMonth()+1).padStart(2,"0"),d=String(t.getDate()).padStart(2,"0");const num=count.toString().padStart(3,"0");invoiceNum.textContent=`TRDS-${y}${m}${d}-${num}`;saveData();}
+function setDateIfEmpty(){if(!invoiceDate.textContent){invoiceDate.textContent=new Date().toLocaleDateString("id-ID");saveData();}}
 
-  const qty = parseInt(onlyDigits(qtyCell.textContent)) || 0;
-  const price = parseInt(onlyDigits(priceCell.textContent)) || 0;
-  const total = qty * price;
-  totalCell.textContent = "Rp " + formatRupiah(total);
+function downloadPDF(){
+  const el=invoiceBox;
+  const nama=billto.value||"Customer";
+  const today=new Date().toISOString().split("T")[0];
+  const fileName=`${nama} - ${brandName.textContent} - ${today}.pdf`;
+  const wasDark=document.body.classList.contains("dark-mode");
+  if(wasDark)document.body.classList.remove("dark-mode");
+  const hidden=document.querySelectorAll(".no-print");
+  hidden.forEach(e=>e.style.display="none");
+  const opt={margin:0.5,filename:fileName,image:{type:"jpeg",quality:0.98},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:"in",format:"a4",orientation:"portrait"}};
+  html2pdf().set(opt).from(el).save().then(()=>{hidden.forEach(e=>e.style.display="");if(wasDark)document.body.classList.add("dark-mode");});
 }
 
-function recalcGrandTotal() {
-  const rows = document.querySelectorAll("#invoiceTable tbody tr");
-  let sum = 0;
-  rows.forEach((row) => {
-    const valText = row.querySelector(".rowTotal")?.textContent || "";
-    const val = parseInt(onlyDigits(valText)) || 0;
-    sum += val;
-  });
-  document.getElementById("grandTotal").textContent = formatRupiah(sum);
-}
+/* ---- Event Listeners ---- */
+addProductBtn.onclick=()=>{count++;appendRow({qty:1,price:0,desc:"Deskripsi Produk"});generateInvoiceNum();saveData();};
+billto.oninput=(e)=>{billToText.textContent=e.target.value;saveData();};
+dueDateInput.onchange=(e)=>{const v=e.target.value;if(v){const dt=new Date(v);dueDate.textContent=dt.toLocaleDateString("id-ID");}else dueDate.textContent="";saveData();};
+brandNameInput.oninput=(e)=>{const b=e.target.value||"TRADESOUNDS";brandName.textContent=b;brandNameFooter.textContent=b;saveData();};
+logoInput.onchange=(e)=>{const f=e.target.files[0];if(f){const r=new FileReader();r.onload=(ev)=>{logoImg.src=ev.target.result;saveData();};r.readAsDataURL(f);}};
+printBtn.onclick=()=>window.print();
+downloadBtn.onclick=downloadPDF;
+clearDataBtn.onclick=()=>{if(confirm("Yakin ingin menghapus semua data invoice?")){localStorage.removeItem(STORAGE_KEY);location.reload();}};
+darkModeToggle.onclick=(e)=>{document.body.classList.toggle("dark-mode");e.target.innerText=document.body.classList.contains("dark-mode")?"☀️ Light Mode":"🌙 Dark Mode";saveData();};
 
-/* ---------- Utilities ---------- */
-function updateRowNumbering() {
-  document.querySelectorAll("#invoiceTable tbody tr").forEach((row, idx) => {
-    row.querySelector(".no-cell").textContent = idx + 1;
-  });
-}
+/* ---- Init ---- */
+window.addEventListener("load",()=>{loadData();setDateIfEmpty();if(!invoiceNum.textContent)generateInvoiceNum();recalcGrandTotal();if(document.querySelectorAll("#invoiceTable tbody tr").length===0){appendRow({qty:1,price:0,desc:"Deskripsi Produk"});saveData();}});
 
-function escapeHtml(unsafe) {
-  return (unsafe || "").toString()
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;");
-}
-
-/* ---------- UI wiring ---------- */
-document.getElementById("addProductBtn").addEventListener("click", () => {
-  count++;
-  appendRow({ qty: 1, price: 0, desc: "Deskripsi Produk" });
-  generateInvoiceNum(); // keep old behavior: update invoice num with count
-  saveData();
-});
-
-document.getElementById("billto").addEventListener("input", (e) => {
-  document.getElementById("billToText").textContent = e.target.value;
-  saveData();
-});
-
-document.getElementById("dueDateInput").addEventListener("change", (e) => {
-  const val = e.target.value;
-  if (val) {
-    const dateObj = new Date(val);
-    document.getElementById("dueDate").textContent = dateObj.toLocaleDateString("id-ID");
-  } else {
-    document.getElementById("dueDate").textContent = "";
-  }
-  saveData();
-});
-
-document.getElementById("brandNameInput").addEventListener("input", (e) => {
-  const brand = e.target.value || "TRADESOUNDS";
-  document.getElementById("brandName").textContent = brand;
-  document.getElementById("brandNameFooter").textContent = brand;
-  saveData();
-});
-
-document.getElementById("logoInput").addEventListener("change", (e) => {
-  const file = e.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      document.getElementById("logoImg").src = ev.target.result;
-      saveData();
-    };
-    reader.readAsDataURL(file);
-  }
-});
-
-document.getElementById("printBtn").addEventListener("click", () => window.print());
-
-document.getElementById("downloadBtn").addEventListener("click", downloadPDF);
-
-document.getElementById("clearDataBtn").addEventListener("click", () => {
-  if (confirm("Yakin ingin menghapus semua data invoice?")) {
-    localStorage.removeItem(STORAGE_KEY);
-    location.reload();
-  }
-});
-
-document.getElementById("darkModeToggle").addEventListener("click", (e) => {
-  document.body.classList.toggle("dark-mode");
-  e.target.innerText = document.body.classList.contains("dark-mode") ? "☀️ Light Mode" : "🌙 Dark Mode";
-  saveData();
-});
-
-/* ---------- Invoice Number & Date ---------- */
-function generateInvoiceNum() {
-  const today = new Date();
-  const y = today.getFullYear();
-  const m = String(today.getMonth() + 1).padStart(2, "0");
-  const d = String(today.getDate()).padStart(2, "0");
-  const nomor = count.toString().padStart(3, "0");
-  const newNum = `TRDS-${y}${m}${d}-${nomor}`;
-  document.getElementById("invoiceNum").textContent = newNum;
-  saveData();
-}
-
-function setDateIfEmpty() {
-  if (!document.getElementById("invoiceDate").textContent) {
-    const today = new Date();
-    document.getElementById("invoiceDate").textContent = today.toLocaleDateString("id-ID");
-    saveData();
-  }
-}
-
-/* ---------- PDF / print handling ---------- */
-function downloadPDF() {
-  const element = document.getElementById("invoiceBox");
-  const nama = document.getElementById("billto").value || "Customer";
-  const today = new Date();
-  const tanggal = today.toISOString().split("T")[0];
-  const fileName = `${nama} - ${document.getElementById("brandName").textContent} - ${tanggal}.pdf`;
-
-  const wasDark = document.body.classList.contains("dark-mode");
-  if (wasDark) document.body.classList.remove("dark-mode");
-
-  const noPrintElements = document.querySelectorAll(".no-print");
-  noPrintElements.forEach(el => el.style.display = "none");
-
-  const opt = {
-    margin: 0.5,
-    filename: fileName,
-    image: { type: "jpeg", quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
-  };
-
-  html2pdf().set(opt).from(element).save().then(() => {
-    noPrintElements.forEach(el => el.style.display = "");
-    if (wasDark) document.body.classList.add("dark-mode");
-  });
-}
-
-
-/* ---------- Auto Save Interval ---------- */
-setInterval(() => {
-  saveData();
-}, 1000); // auto-save setiap 5 detik
-
-
-/* ---------- Init2 ---------- */
-window.addEventListener("load", () => {
-  loadData();
-  setDateIfEmpty();
-
-  // if no invoice number yet, generate once
-  if (!document.getElementById("invoiceNum").textContent) generateInvoiceNum();
-
-  // ensure grand total is correct after load
-  recalcGrandTotal();
-
-  // If no rows, add one starter row
-  if (document.querySelectorAll("#invoiceTable tbody tr").length === 0) {
-    // don't auto-increment count on initial starter (so invoice num stable) — only increment when user clicks add
-    appendRow({ qty: 1, price: 0, desc: "Deskripsi Produk" });
-    saveData();
-  }
-});
+/* ---- Auto Save every 5 seconds ---- */
+setInterval(()=>{saveData();},5000);
 </script>
 </body>
 </html>
