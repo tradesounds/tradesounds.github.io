@@ -4,245 +4,152 @@
   <meta charset="UTF-8" />
   <title>Invoice Generator - TRADESOUNDS</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" /> 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" /> 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<style>
-body { background: #f8f9fa; }
-#invoiceBox { background: #fff; padding: 10px; border: 1px solid #dee2e6; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); overflow-x: auto; }
-.invoice-header { border-bottom: 2px solid #495057; padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; }
-.invoice-title { font-size: 26px; font-weight: 700; text-transform: uppercase; }
-.brand-text { font-size: 24px; font-weight: 800; color: #212529; }
-table.table th { background: #f1f3f5; font-weight: 600; text-align: center; color: #212529; white-space: nowrap; }
-table.table td { vertical-align: middle; color: #212529; word-break: break-word; }
-input, textarea { background: #fff; color: #212529; border: 1px solid #ced4da; border-radius: 6px; padding: 5px 8px; }
-.product-img { max-height: 50px; max-width: 80px; }
-body.dark-mode { background: #121212; color: #e4e6eb; }
-body.dark-mode #invoiceBox { background: #1e1e1e; border: 1px solid #333; }
-body.dark-mode .invoice-header { border-color: #555; }
-body.dark-mode .invoice-title, body.dark-mode .brand-text, body.dark-mode h3, body.dark-mode p, body.dark-mode strong { color: #f5f5f5 !important; }
-body.dark-mode table.table th { background: #2c2c2c; color: #f1f1f1; border-color: #444; }
-body.dark-mode table.table td { background: #1e1e1e; color: #e4e6eb; border-color: #444; }
-body.dark-mode input, body.dark-mode textarea { background: #2a2a2a; color: #fff; border: 1px solid #555; }
-body.dark-mode .footer { color: #aaa; }
-@media print {
-  body, #invoiceBox { background: #ffffff !important; color: #000000 !important; border: none !important; box-shadow: none !important; }
-  .invoice-header, .invoice-title, h3, h4, strong, .grand-total, .footer { color: #000000 !important; }
-  table.table th { background: #f1f3f1 !important; color: #000000 !important; border: 1px solid #000 !important; }
-  table.table td { background: #ffffff !important; color: #000000 !important; border: 1px solid #000 !important; }
-  .no-print { display: none !important; }
-}
-</style>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body { background-color: #f8f9fa; transition: background-color 0.3s, color 0.3s; }
+    .dark-mode { background-color: #121212; color: white; }
+    .logo-preview { max-width: 150px; max-height: 150px; margin-top: 10px; }
+    .form-section { background: white; padding: 20px; border-radius: 10px; }
+    .dark-mode .form-section { background: #1e1e1e; }
+  </style>
 </head>
 <body>
-<div class="container my-4">
-  <div class="card shadow-sm mb-4 no-print">
-    <div class="card-body d-flex justify-content-between align-items-center flex-wrap">
-      <h4 class="card-title mb-2">Form Input Invoice</h4>
-      <div class="ms-auto">
-        <button id="darkModeToggle" class="btn btn-outline-dark me-2">🌙 Dark Mode</button>
-        <button id="clearDataBtn" class="btn btn-outline-danger">🗑️ Clear Data</button>
+  <div class="container my-4">
+    <h2 class="text-center mb-4">🧾 Invoice Generator - TRADESOUNDS</h2>
+
+    <div class="d-flex justify-content-between mb-3">
+      <button id="darkModeToggle" class="btn btn-secondary">🌙 Dark Mode</button>
+      <button id="clearData" class="btn btn-danger">🗑️ Clear Data</button>
+    </div>
+
+    <div class="form-section shadow">
+      <div class="mb-3">
+        <label class="form-label fw-bold">Nama Perusahaan:</label>
+        <input type="text" class="form-control" id="companyName">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold">Alamat:</label>
+        <textarea class="form-control" id="address"></textarea>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold">Upload Logo:</label>
+        <input type="file" class="form-control" id="logoInput" accept="image/*">
+        <img id="logoPreview" class="logo-preview d-block" alt="Preview Logo">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold">Nomor Invoice:</label>
+        <input type="text" class="form-control" id="invoiceNumber">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold">Tanggal:</label>
+        <input type="date" class="form-control" id="invoiceDate">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold">Daftar Item:</label>
+        <textarea class="form-control" id="itemList" placeholder="Contoh: Sewa Sound System - Rp 2.000.000"></textarea>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold">Total:</label>
+        <input type="text" class="form-control" id="totalAmount">
       </div>
     </div>
-    <hr>
-    <div class="card-body">
-      <div class="mb-3"><label class="form-label">Nama Brand:</label><input type="text" id="brandNameInput" class="form-control" placeholder="Misalnya: TRADESOUNDS" /></div>
-      <div class="mb-3"><label class="form-label">Kepada Yth.:</label><input type="text" id="billto" class="form-control" /></div>
-      <div class="mb-3"><label class="form-label">Jatuh Tempo:</label><input type="date" id="dueDateInput" class="form-control" /></div> 
-      <div class="mb-3"><label class="form-label">Ganti Logo:</label><input type="file" id="logoInput" class="form-control" accept="image/*" /></div>
-      <button id="addProductBtn" class="btn btn-primary me-2 mb-3">Tambah Produk</button>
-      <button id="printBtn" class="btn btn-secondary me-2 mb-3">Print</button>
-      <button id="downloadBtn" class="btn btn-success mb-3">Unduh PDF</button>
-    </div>
+
+    <p class="text-center text-muted mt-3">Data disimpan otomatis setiap 5 detik 💾</p>
   </div>
 
-  <div class="card shadow" id="invoiceBox">
-    <div class="card-body">
-      <div class="d-flex justify-content-between align-items-center invoice-header">
-        <div class="brand-text"><img id="logoImg" src="" alt="Logo" style="max-height: 60px;" /></div>
-        <div class="text-end">
-          <h3 class="fw-bold mb-1" id="brandName">TRADESOUNDS</h3>
-          <p class="mb-0 small">Komplek Automotif Cibubur Point<br>Blok E No.17, Cimanggis, Depok 16545</p>
-        </div>
-      </div>
+  <script>
+    const companyName = document.getElementById("companyName");
+    const address = document.getElementById("address");
+    const logoInput = document.getElementById("logoInput");
+    const logoPreview = document.getElementById("logoPreview");
+    const invoiceNumber = document.getElementById("invoiceNumber");
+    const invoiceDate = document.getElementById("invoiceDate");
+    const itemList = document.getElementById("itemList");
+    const totalAmount = document.getElementById("totalAmount");
+    const darkModeToggle = document.getElementById("darkModeToggle");
+    const clearDataBtn = document.getElementById("clearData");
 
-      <h4 class="mb-4 text-center invoice-title">Invoice</h4>
-      <div class="row mb-4">
-        <div class="col-md-6">
-          <p class="mb-1"><strong>No. Invoice:</strong> <span id="invoiceNum"></span></p>
-          <p class="mb-1"><strong>Tanggal Invoice:</strong> <span id="invoiceDate"></span></p>
-          <p class="mb-1"><strong>Jatuh Tempo:</strong> <span id="dueDate"></span></p>
-        </div>
-        <div class="col-md-6 text-md-end">
-          <p><strong>Kepada Yth.:</strong><br><span id="billToText"></span></p>
-        </div>
-      </div>
+    // === Muat Data dari localStorage ===
+    window.onload = function() {
+      if (localStorage.getItem("invoiceData")) {
+        const data = JSON.parse(localStorage.getItem("invoiceData"));
+        companyName.value = data.companyName || "";
+        address.value = data.address || "";
+        invoiceNumber.value = data.invoiceNumber || "";
+        invoiceDate.value = data.invoiceDate || "";
+        itemList.value = data.itemList || "";
+        totalAmount.value = data.totalAmount || "";
+        if (data.logo) logoPreview.src = data.logo;
+      }
 
-      <div class="table-responsive">
-        <table class="table table-bordered align-middle text-center" id="invoiceTable">
-          <thead>
-            <tr><th>NO</th><th>Gambar</th><th>Deskripsi</th><th>Qty</th><th>Harga Satuan</th><th>Total</th><th class="no-print">Aksi</th></tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-
-      <div class="text-end grand-total border-top pt-3">Jumlah Tagihan: Rp <span id="grandTotal">0</span></div>
-
-      <div class="mt-5 text-end">
-        <p><strong>Authorized Signature</strong></p>
-        <p class="fw-bold">___________________________</p>
-        <p class="mb-0" id="brandNameFooter">TRADESOUNDS</p>
-      </div>
-
-      <div class="footer mt-5">Terima kasih atas kepercayaan Anda kepada kami.</div>
-    </div>
-  </div>
-</div>
-
-<script>
-/* IndexedDB Setup */
-const DB_NAME = "invoice_images_db";
-const DB_VERSION = 1;
-let db;
-
-function openDB() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-    request.onupgradeneeded = (e) => {
-      db = e.target.result;
-      if (!db.objectStoreNames.contains("images")) {
-        db.createObjectStore("images");
+      if (localStorage.getItem("darkMode") === "true") {
+        document.body.classList.add("dark-mode");
       }
     };
-    request.onsuccess = (e) => { db = e.target.result; resolve(db); };
-    request.onerror = (e) => reject(e);
-  });
-}
-async function saveImage(key, dataUrl) {
-  const tx = db.transaction("images", "readwrite");
-  tx.objectStore("images").put(dataUrl, key);
-}
-async function getImage(key) {
-  return new Promise((resolve) => {
-    const tx = db.transaction("images", "readonly");
-    const req = tx.objectStore("images").get(key);
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => resolve(null);
-  });
-}
-async function deleteAllImages() {
-  const tx = db.transaction("images", "readwrite");
-  tx.objectStore("images").clear();
-}
 
-/* LocalStorage + IndexedDB Combo */
-let count = 0;
-const STORAGE_KEY = "invoiceData_v3";
-function formatRupiah(num){return (Number(num)||0).toLocaleString("id-ID");}
-function onlyDigits(t){return (t||"").toString().replace(/\D/g,"")||"0";}
-function escapeHtml(unsafe){return (unsafe||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");}
-
-async function saveData(){
-  const rows=Array.from(document.querySelectorAll("#invoiceTable tbody tr"));
-  const items=[];
-  for(let i=0;i<rows.length;i++){
-    const row=rows[i];
-    const id="row-"+i;
-    const desc=row.querySelector(".desc").textContent;
-    const qty=parseInt(onlyDigits(row.querySelector(".qty").textContent))||0;
-    const price=parseInt(onlyDigits(row.querySelector(".price").textContent))||0;
-    const img=row.querySelector("img.product-img").src;
-    if(img) await saveImage(id,img);
-    items.push({desc,qty,price,imageKey:id});
-  }
-  const data={
-    billto:billto.value,
-    dueDateISO:dueDateInput.value,
-    dueDateDisplay:dueDate.textContent,
-    items,
-    grandTotal:onlyDigits(grandTotal.textContent),
-    invoiceNum:invoiceNum.textContent,
-    invoiceDate:invoiceDate.textContent,
-    brand:brandName.textContent,
-    count,
-    darkMode:document.body.classList.contains("dark-mode")
-  };
-  localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
-}
-
-async function loadData(){
-  const raw=localStorage.getItem(STORAGE_KEY);
-  if(!raw)return;
-  const data=JSON.parse(raw);
-  billto.value=data.billto||"";
-  billToText.textContent=data.billto||"";
-  if(data.dueDateISO){dueDateInput.value=data.dueDateISO;const dt=new Date(data.dueDateISO);if(!isNaN(dt))dueDate.textContent=dt.toLocaleDateString("id-ID");}
-  if(data.brand){brandName.textContent=data.brand;brandNameFooter.textContent=data.brand;brandNameInput.value=data.brand;}
-  if(data.invoiceNum)invoiceNum.textContent=data.invoiceNum;
-  if(data.invoiceDate)invoiceDate.textContent=data.invoiceDate;
-  count=data.count||0;
-  if(data.darkMode)document.body.classList.add("dark-mode");
-  if(Array.isArray(data.items)){
-    const tbody=document.querySelector("#invoiceTable tbody");tbody.innerHTML="";
-    for(const it of data.items){
-      const img=await getImage(it.imageKey);
-      appendRow({...it,image:img});
+    // === Simpan Data ke localStorage ===
+    function saveData() {
+      const data = {
+        companyName: companyName.value,
+        address: address.value,
+        invoiceNumber: invoiceNumber.value,
+        invoiceDate: invoiceDate.value,
+        itemList: itemList.value,
+        totalAmount: totalAmount.value,
+        logo: logoPreview.src || ""
+      };
+      localStorage.setItem("invoiceData", JSON.stringify(data));
     }
-  }
-  recalcGrandTotal();
-}
 
-function appendRow(item={}){
-  const tbody=document.querySelector("#invoiceTable tbody");
-  const row=document.createElement("tr");
-  row.innerHTML=`
-    <td class="no-cell"></td>
-    <td>
-      <input type="file" accept="image/*" class="form-control form-control-sm no-print file-input" />
-      <img class="product-img mt-1" src="${item.image||""}" alt="" />
-    </td>
-    <td class="desc" contenteditable="true">${escapeHtml(item.desc||"Deskripsi Produk")}</td>
-    <td class="qty" contenteditable="true">${item.qty??1}</td>
-    <td class="price" contenteditable="true">${item.price??0}</td>
-    <td class="rowTotal">Rp 0</td>
-    <td class="no-print text-center"><i class="fas fa-trash text-danger" style="cursor:pointer;"></i></td>`;
-  tbody.appendChild(row);
-  updateRowNumbering();
-  recalcRow(row);
-  const fileInput=row.querySelector(".file-input");
-  const img=row.querySelector("img.product-img");
-  fileInput.addEventListener("change",async(e)=>{
-    const f=e.target.files[0];if(!f)return;
-    if(f.size>500000){alert("Ukuran gambar terlalu besar! Maks 500KB.");return;}
-    const reader=new FileReader();
-    reader.onload=async(ev)=>{img.src=ev.target.result;await saveData();};
-    reader.readAsDataURL(f);
-  });
-  ["input"].forEach(ev=>{
-    row.querySelector(".desc").addEventListener(ev,saveData);
-    row.querySelector(".qty").addEventListener(ev,()=>{recalcRow(row);saveData();});
-    row.querySelector(".price").addEventListener(ev,()=>{recalcRow(row);saveData();});
-  });
-  row.querySelector(".fa-trash").addEventListener("click",()=>{row.remove();updateRowNumbering();recalcGrandTotal();saveData();});
-}
-function recalcRow(row){const qty=parseInt(onlyDigits(row.querySelector(".qty").textContent))||0;const price=parseInt(onlyDigits(row.querySelector(".price").textContent))||0;row.querySelector(".rowTotal").textContent="Rp "+formatRupiah(qty*price);recalcGrandTotal();}
-function recalcGrandTotal(){let sum=0;document.querySelectorAll(".rowTotal").forEach(td=>sum+=parseInt(onlyDigits(td.textContent))||0);grandTotal.textContent=formatRupiah(sum);}
-function updateRowNumbering(){document.querySelectorAll("#invoiceTable tbody tr").forEach((r,i)=>r.querySelector(".no-cell").textContent=i+1);}
+    // === Upload & Preview Logo ===
+    logoInput.addEventListener("change", function() {
+      const file = this.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          logoPreview.src = e.target.result;
+          saveData();
+        };
+        reader.readAsDataURL(file);
+      }
+    });
 
-addProductBtn.onclick=()=>{count++;appendRow({qty:1,price:0,desc:"Deskripsi Produk"});generateInvoiceNum();saveData();};
-billto.oninput=()=>{billToText.textContent=billto.value;saveData();};
-dueDateInput.onchange=()=>{if(dueDateInput.value){const dt=new Date(dueDateInput.value);dueDate.textContent=dt.toLocaleDateString("id-ID");}else{dueDate.textContent="";}saveData();};
-brandNameInput.oninput=()=>{brandName.textContent=brandNameInput.value||"TRADESOUNDS";brandNameFooter.textContent=brandName.textContent;saveData();};
-printBtn.onclick=()=>window.print();
-downloadBtn.onclick=()=>downloadPDF();
-clearDataBtn.onclick=async()=>{if(confirm("Yakin ingin hapus semua data?")){localStorage.removeItem(STORAGE_KEY);await deleteAllImages();location.reload();}};
-darkModeToggle.onclick=(e)=>{document.body.classList.toggle("dark-mode");e.target.innerText=document.body.classList.contains("dark-mode")?"☀️ Light Mode":"🌙 Dark Mode";saveData();};
-function generateInvoiceNum(){const t=new Date();invoiceNum.textContent=`TRDS-${t.getFullYear()}${String(t.getMonth()+1).padStart(2,"0")}${String(t.getDate()).padStart(2,"0")}-${count.toString().padStart(3,"0")}`;saveData();}
-function setDateIfEmpty(){if(!invoiceDate.textContent){const t=new Date();invoiceDate.textContent=t.toLocaleDateString("id-ID");saveData();}}
-function downloadPDF(){const element=invoiceBox;const nama=billto.value||"Customer";const t=new Date();const tanggal=t.toISOString().split("T")[0];const fileName=`${nama}-${brandName.textContent}-${tanggal}.pdf`;const wasDark=document.body.classList.contains("dark-mode");if(wasDark)document.body.classList.remove("dark-mode");const noPrint=document.querySelectorAll(".no-print");noPrint.forEach(e=>e.style.display="none");const opt={margin:0.5,filename:fileName,image:{type:"jpeg",quality:0.98},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:"in",format:"a4",orientation:"portrait"}};html2pdf().set(opt).from(element).save().then(()=>{noPrint.forEach(e=>e.style.display="");if(wasDark)document.body.classList.add("dark-mode");});}
+    // === Autosave Tiap 5 Detik ===
+    setInterval(saveData, 5000);
 
-window.addEventListener("load",async()=>{await openDB();await loadData();setDateIfEmpty();if(!invoiceNum.textContent)generateInvoiceNum();if(document.querySelectorAll("#invoiceTable tbody tr").length===0){appendRow({qty:1,price:0,desc:"Deskripsi Produk"});saveData();}});
-</script>
+    // === Simpan saat tutup tab atau pindah halaman ===
+    window.addEventListener("beforeunload", saveData);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") saveData();
+    });
+
+    // === Toggle Dark Mode ===
+    darkModeToggle.addEventListener("click", () => {
+      document.body.classList.toggle("dark-mode");
+      localStorage.setItem("darkMode", document.body.classList.contains("dark-mode"));
+    });
+
+    // === Hapus Semua Data ===
+    clearDataBtn.addEventListener("click", () => {
+      if (confirm("Yakin ingin menghapus semua data invoice?")) {
+        localStorage.removeItem("invoiceData");
+        localStorage.removeItem("darkMode");
+        companyName.value = "";
+        address.value = "";
+        invoiceNumber.value = "";
+        invoiceDate.value = "";
+        itemList.value = "";
+        totalAmount.value = "";
+        logoPreview.src = "";
+        document.body.classList.remove("dark-mode");
+      }
+    });
+  </script>
 </body>
 </html>
